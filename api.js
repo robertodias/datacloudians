@@ -14,13 +14,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 
-//------ APIs DEFINITION -------
+
+//Import Properties Reader
+var properties = require('./properties.json');
+
+//MONGO CONNECTION STRING
+var dbConn = 'mongodb://' + properties.dbuser
+                          + ':'
+                          + properties.dbpass
+                          + '@'
+                          + properties.dburl
+                          + '/'
+                          + properties.dbname;
 
 //IMPORT MONGO
 var mongoose = require('mongoose');
-
-//MONGO CONNECTION STRING
-mongoose.connect();
+mongoose.connect(dbConn);
 
 var db = mongoose.connection;
 var Transaction = require('./models/transaction.js');
@@ -28,6 +37,8 @@ var User = require('./models/user.js');
 
 //MONGO LOGs
 db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
+
+//------ APIs DEFINITION -------
 
 //STEUP A SESSION
 app.use(session({

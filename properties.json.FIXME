@@ -1,0 +1,7 @@
+{
+  "FIXME" : "Remove this attribute, adjust the file variables and rename it to properties.json"
+  "dbname" : "<database name>",
+  "dbuser" : "<database user>",
+  "dbpass" : "<database password>",
+  "dburl" : "<database url>"
+}
