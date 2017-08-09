@@ -25,7 +25,10 @@ class UserAdmin extends React.Component{
     const user=[{
       //_id: will come  from MongoDB
       name: findDOMNode(this.refs.name).value,
-      balance: findDOMNode(this.refs.balance).value
+      balance: findDOMNode(this.refs.balance).value,
+      email: findDOMNode(this.refs.email).value,
+      password: findDOMNode(this.refs.password).value
+
     }]
     this.props.postUser(user);
   }
@@ -42,6 +45,8 @@ class UserAdmin extends React.Component{
     this.props.resetSaveButtonForm();
     findDOMNode(this.refs.name).value = '';
     findDOMNode(this.refs.balance).value = '';
+    findDOMNode(this.refs.email).value = '';
+    findDOMNode(this.refs.password).value = '';
   }
 
   render() {
@@ -71,6 +76,24 @@ class UserAdmin extends React.Component{
                   type="text"
                   placeholder="Enter a Balance..."
                   ref="balance"
+                />
+                <FormControl.Feedback/>
+              </FormGroup>
+              <FormGroup controlId="email" validationState={this.props.validation}>
+                <ControlLabel>Email</ControlLabel>
+                <FormControl
+                  type="text"
+                  placeholder="Enter your email..."
+                  ref="email"
+                />
+                <FormControl.Feedback/>
+              </FormGroup>
+              <FormGroup controlId="password" validationState={this.props.validation}>
+                <ControlLabel>Password</ControlLabel>
+                <FormControl
+                  type="text"
+                  placeholder="Enter a Password..."
+                  ref="password"
                 />
                 <FormControl.Feedback/>
               </FormGroup>

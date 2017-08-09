@@ -29,7 +29,10 @@ var dbConn = 'mongodb://' + properties.dbuser
 
 //IMPORT MONGO
 var mongoose = require('mongoose');
-mongoose.connect(dbConn);
+mongoose.connect(dbConn, {
+  useMongoClient: true,
+  /* other options */
+});
 
 var db = mongoose.connection;
 var Transaction = require('./models/transaction.js');
@@ -42,7 +45,7 @@ db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
 
 //STEUP A SESSION
 app.use(session({
-  secret: 'MySecretPassword',
+  secret: properties.apikey,
   saveUninitialized: false,
   resave: false,
   cookie: {maxAge: 2 * 24 * 60 * 60 * 1000}, //2 days in miliseconds
@@ -51,6 +54,23 @@ app.use(session({
     ttl: 2 * 24 * 60 * 60 //2 days in seconds
   })
 }))
+
+//---> LOGIN
+app.post('/login', function(req, res) {
+
+  var user = req.body;
+  var email = user[0].email;
+  var password = user[0].password;
+
+  console.log("Email: " + email);
+
+  User.find({"email" : email, "password" : password}).exec(function(err, users) {
+    if(err) {
+      console.log("ERROR: [GET LOGIN] ", err);
+    }
+    res.json(users);
+  })
+});
 
 //---> CREATE TRANSACTION
 app.post('/transaction', function(req, res) {

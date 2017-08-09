@@ -3,5 +3,6 @@
   "dbname" : "<database name>",
   "dbuser" : "<database user>",
   "dbpass" : "<database password>",
-  "dburl" : "<database url>"
+  "dburl" : "<database url>",
+  "apikey" : "<api key>"
 }

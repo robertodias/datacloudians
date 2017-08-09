@@ -46,5 +46,5 @@ export function deleteUser(id) {
 
 //RESET SAVE USERS FORM BUTTON
 export function resetSaveButtonForm() {
-  return { type:"RESET_USERS_BUTTON" }
+  return { type:"RESET_USER_BUTTON" }
 }
