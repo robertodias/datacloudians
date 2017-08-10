@@ -11,9 +11,10 @@ import axios from 'axios';
 
 //IMPORT REDUX
 import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
 
 //OUR ACTIONS
-import {postLogin, resetSaveButtonForm} from '../../actions/loginActions';
+import * from '../../actions/loginActions';
 
 
 class Login extends React.Component {
@@ -30,7 +31,7 @@ class Login extends React.Component {
 
   resetForm() {
     // RESET FORM AND BUTTON
-    this.props.resetSaveButtonForm();
+    this.props.resetLoginButtonForm();
     findDOMNode(this.refs.email).value = '';
     findDOMNode(this.refs.password).value = '';
   }
@@ -58,7 +59,6 @@ class Login extends React.Component {
                   <FormControl ref="password" placeholder="Password" />
                 </Col>
               </FormGroup>
-
               <FormGroup>
                 <Col smOffset={2} sm={8}>
                   <Button
@@ -78,17 +78,17 @@ class Login extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    user: state.user.user,
-    msg: state.user.msg,
-    style: state.user.style,
-    validation: state.user.validation
+    user: state.login.user,
+    msg: state.login.msg,
+    style: state.login.style,
+    validation: state.login.validation
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     postLogin,
-    resetSaveButtonForm
+    resetLoginButtonForm
   }, dispatch);
 }
 

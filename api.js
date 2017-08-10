@@ -59,14 +59,18 @@ app.use(session({
 app.post('/login', function(req, res) {
 
   var user = req.body;
-  var email = user[0].email;
-  var password = user[0].password;
+  var userEmail = user[0].email;
+  var userPass = user[0].password;
 
-  console.log("Email: " + email);
-
-  User.find({"email" : email, "password" : password}).exec(function(err, users) {
+  User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
+    try {
+      console.log(users[0].email);
+    } catch (e) {
+      err = "LOGIN FAILED";
+    }
     if(err) {
       console.log("ERROR: [GET LOGIN] ", err);
+      res.status(500);
     }
     res.json(users);
   })
@@ -114,8 +118,7 @@ app.post('/transaction', function(req, res) {
      })
    } else {
      err = "INVALID TRANSACTION";
-     console.log("ERROR: [POST BOOKS] ", err);
-     res.json({ "error": "INVALID TRANSACTION" });
+     res.status(500);
    }
   })
 

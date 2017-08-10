@@ -19,6 +19,6 @@ export function postLogin(user) {
 }
 
 //RESET SAVE USERS FORM BUTTON
-export function resetSaveButtonForm() {
+export function resetLoginButtonForm() {
   return { type:"RESET_LOGIN_BUTTON" }
 }

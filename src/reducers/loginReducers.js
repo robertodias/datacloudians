@@ -14,7 +14,7 @@ export function loginReducers(state={user:[]}, action){
 
     case "POST_LOGIN_REJECTED":
         return {...state,
-                msg: 'Please, try again later.',
+                msg: 'Invalid Email or Password!',
                 style: 'danger',
                 validation: 'error'}
         break;

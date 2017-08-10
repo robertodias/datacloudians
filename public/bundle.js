@@ -37858,7 +37858,7 @@ function loginReducers() {
 
     case "POST_LOGIN_REJECTED":
       return _extends({}, state, {
-        msg: 'Please, try again later.',
+        msg: 'Invalid Email or Password!',
         style: 'danger',
         validation: 'error' });
       break;
@@ -48992,167 +48992,10 @@ exports.default = Footer;
 
 /***/ }),
 /* 549 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 "use strict";
-
-
-//IMPORT REACT
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(0);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactBootstrap = __webpack_require__(44);
-
-var _reactDom = __webpack_require__(18);
-
-var _reactRedux = __webpack_require__(43);
-
-var _axios = __webpack_require__(61);
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _redux = __webpack_require__(33);
-
-var _loginActions = __webpack_require__(568);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-//IMPORT AXIOS
-
-
-//IMPORT REDUX
-
-
-//OUR ACTIONS
-
-
-var Login = function (_React$Component) {
-  _inherits(Login, _React$Component);
-
-  function Login() {
-    _classCallCheck(this, Login);
-
-    return _possibleConstructorReturn(this, (Login.__proto__ || Object.getPrototypeOf(Login)).apply(this, arguments));
-  }
-
-  _createClass(Login, [{
-    key: 'handleSubmit',
-    value: function handleSubmit() {
-      var user = [{
-        //_id: will come  from MongoDB
-        email: (0, _reactDom.findDOMNode)(this.refs.email).value,
-        password: (0, _reactDom.findDOMNode)(this.refs.password).value
-
-      }];
-      this.props.postLogin(user);
-    }
-  }, {
-    key: 'resetForm',
-    value: function resetForm() {
-      // RESET FORM AND BUTTON
-      this.props.resetSaveButtonForm();
-      (0, _reactDom.findDOMNode)(this.refs.email).value = '';
-      (0, _reactDom.findDOMNode)(this.refs.password).value = '';
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      return _react2.default.createElement(
-        _reactBootstrap.Col,
-        { sm: 12 },
-        _react2.default.createElement(
-          _reactBootstrap.Col,
-          { sm: 6, smOffset: 3 },
-          _react2.default.createElement(
-            _reactBootstrap.Well,
-            null,
-            _react2.default.createElement(
-              _reactBootstrap.Form,
-              { horizontal: true },
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'email', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
-                  'Email'
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { sm: 8 },
-                  _react2.default.createElement(_reactBootstrap.FormControl, { ref: 'email', placeholder: 'Email' })
-                )
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'password', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
-                  'Password'
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { sm: 8 },
-                  _react2.default.createElement(_reactBootstrap.FormControl, { ref: 'password', placeholder: 'Password' })
-                )
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                null,
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { smOffset: 2, sm: 8 },
-                  _react2.default.createElement(
-                    _reactBootstrap.Button,
-                    {
-                      onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
-                      bsStyle: !this.props.style ? "primary" : this.props.style },
-                    !this.props.msg ? "Sign in" : this.props.msg
-                  )
-                )
-              )
-            )
-          )
-        )
-      );
-    }
-  }]);
-
-  return Login;
-}(_react2.default.Component);
-
-function mapStateToProps(state) {
-  return {
-    user: state.user.user,
-    msg: state.user.msg,
-    style: state.user.style,
-    validation: state.user.validation
-  };
-}
-
-function mapDispatchToProps(dispatch) {
-  return (0, _redux.bindActionCreators)({
-    postLogin: _loginActions.postLogin,
-    resetSaveButtonForm: _loginActions.resetSaveButtonForm
-  }, dispatch);
-}
-
-exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Login);
+throw new Error("Module build failed: SyntaxError: Unexpected token (17:9)\n\n\u001b[0m \u001b[90m 15 | \u001b[39m\n \u001b[90m 16 | \u001b[39m\u001b[90m//OUR ACTIONS\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 17 | \u001b[39m\u001b[36mimport\u001b[39m \u001b[33m*\u001b[39m from \u001b[32m'../../actions/loginActions'\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m    | \u001b[39m         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 18 | \u001b[39m\n \u001b[90m 19 | \u001b[39m\n \u001b[90m 20 | \u001b[39m\u001b[36mclass\u001b[39m \u001b[33mLogin\u001b[39m \u001b[36mextends\u001b[39m \u001b[33mReact\u001b[39m\u001b[33m.\u001b[39m\u001b[33mComponent\u001b[39m {\u001b[0m\n");
 
 /***/ }),
 /* 550 */
@@ -50023,45 +49866,7 @@ module.exports = function spread(callback) {
 
 
 /***/ }),
-/* 568 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-//IMPORT AXIOS
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.postLogin = postLogin;
-exports.resetSaveButtonForm = resetSaveButtonForm;
-
-var _axios = __webpack_require__(61);
-
-var _axios2 = _interopRequireDefault(_axios);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-//LOGIN ACTIONS
-
-//LOGIN WITH AN USER
-function postLogin(user) {
-  return function (dispatch) {
-    _axios2.default.post("/api/login", user).then(function (response) {
-      dispatch({ type: "POST_LOGIN", payload: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "POST_LOGIN_REJECTED", payload: "There was an error during the LOGIN." });
-    });
-  };
-}
-
-//RESET SAVE USERS FORM BUTTON
-function resetSaveButtonForm() {
-  return { type: "RESET_LOGIN_BUTTON" };
-}
-
-/***/ }),
+/* 568 */,
 /* 569 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50627,6 +50432,15 @@ var Transaction = function (_React$Component) {
   }
 
   _createClass(Transaction, [{
+    key: 'componentWillMount',
+    value: function componentWillMount() {
+      var history = this.props.history;
+      console.log(this.props);
+      if (false) {
+        history.push('/'); // redirects the user to '/'
+      }
+    }
+  }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
       this.props.getUser();
