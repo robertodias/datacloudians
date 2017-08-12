@@ -15,8 +15,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-
-
 //Import Properties Reader
 var properties = require('./properties.json');
 
@@ -132,7 +130,6 @@ app.post('/transaction', function(req, res) {
 
 })
 
-
 //---> CREATE USER
 app.post('/user', function(req, res) {
   var user = req.body;
@@ -189,7 +186,6 @@ app.put('/user/:_id', function(req, res) {
   });
 
 });
-
 // END APIs
 
 app.listen(3001, function(err){
