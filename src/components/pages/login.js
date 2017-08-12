@@ -4,7 +4,6 @@
 import React from 'react';
 import {Col, Well, Form, FormControl, FormGroup, ControlLabel, Button} from 'react-bootstrap';
 import {findDOMNode} from 'react-dom';
-import {connect} from 'react-redux';
 
 //IMPORT AXIOS
 import axios from 'axios';
@@ -14,7 +13,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 //OUR ACTIONS
-import * from '../../actions/loginActions';
+import {postLogin, resetLoginButtonForm} from '../../actions/loginActions';
 
 
 class Login extends React.Component {

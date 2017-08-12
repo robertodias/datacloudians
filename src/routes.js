@@ -1,7 +1,6 @@
 "use strict"
 //IMPORT React
 import React from 'react';
-import {render} from 'react-dom';
 
 //IMPORT Router
 import {Router, Route, IndexRoute, browserHistory} from 'react-router';

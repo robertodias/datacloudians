@@ -2,6 +2,7 @@
 var express = require('express');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var helmet = require('helmet');
 
 //Connect-Mongo
 const session = require('express-session');
@@ -9,6 +10,7 @@ const MongoStore = require('connect-mongo')(session);
 
 var app = express();
 
+app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -42,18 +44,22 @@ var User = require('./models/user.js');
 db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
 
 //------ APIs DEFINITION -------
-
-//STEUP A SESSION
 app.use(session({
   secret: properties.apikey,
   saveUninitialized: false,
   resave: false,
-  cookie: {maxAge: 2 * 24 * 60 * 60 * 1000}, //2 days in miliseconds
+  name: "id",
+  cookie:{
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          maxAge: 2 * 24 * 60 * 60 * 1000
+         }, //2 days in miliseconds
   store: new MongoStore({
     mongooseConnection: db,
     ttl: 2 * 24 * 60 * 60 //2 days in seconds
   })
-}))
+}));
 
 //---> LOGIN
 app.post('/login', function(req, res) {
@@ -64,7 +70,9 @@ app.post('/login', function(req, res) {
 
   User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
     try {
-      console.log(users[0].email);
+
+      var emailChecked = users[0].email;
+
     } catch (e) {
       err = "LOGIN FAILED";
     }
