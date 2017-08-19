@@ -1,8 +1,9 @@
 "use strict"
 
 import React from 'react';
+import {Router, Route, IndexRoute, browserHistory} from 'react-router';
+import {LinkContainer} from 'react-router-bootstrap';
 import {Nav, NavItem, Navbar, Badge} from 'react-bootstrap';
-
 
 class Menu extends React.Component {
   render() {
@@ -10,19 +11,29 @@ class Menu extends React.Component {
       <Navbar fixedTop>
         <Navbar.Header>
           <Navbar.Brand>
-            <a href="/">DC$ <span className="beta">beta</span></a>
+            DC$ <span className="beta">beta</span>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
-            <NavItem eventKey={1} href="/">Team</NavItem>
-            <NavItem eventKey={2} href="/">My Account</NavItem>
-            <NavItem eventKey={3} href="/transfer">Transfer</NavItem>
+            <LinkContainer to="/">
+              <NavItem eventKey={1}>Team</NavItem>
+            </LinkContainer>
+            <LinkContainer to="/">
+              <NavItem eventKey={2}>My Account</NavItem>
+            </LinkContainer>
+            <LinkContainer to="transfer">
+              <NavItem eventKey={3}>Transfer</NavItem>
+            </LinkContainer>
           </Nav>
           <Nav pullRight>
-            <NavItem eventKey={1} href="/about">About</NavItem>
-            <NavItem eventKey={2} href="/admin">Admin</NavItem>
+            <LinkContainer to="about">
+              <NavItem eventKey={1}>About</NavItem>
+            </LinkContainer>
+            <LinkContainer to="admin">
+              <NavItem eventKey={2}>Admin</NavItem>
+            </LinkContainer>
           </Nav>
         </Navbar.Collapse>
       </Navbar>

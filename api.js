@@ -9,7 +9,6 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
 var app = express();
-
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,9 +36,41 @@ mongoose.connect(dbConn, {
 var db = mongoose.connection;
 var Transaction = require('./models/transaction.js');
 var User = require('./models/user.js');
-
-//MONGO LOGs
 db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
+
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
+passport.use(new LocalStrategy({
+    usernameField: 'email'
+  },
+  function(username, password, done) {
+    User.findOne({ username: username }, function(err, user) {
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });
+  }
+));
+
+passport.serializeUser(function(user, cb) {
+  cb(null, user.id);
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.deserializeUser(function(id, cb) {
+  db.users.findById(id, function (err, user) {
+    if (err) { return cb(err); }
+    cb(null, user);
+  });
+});
 
 //------ APIs DEFINITION -------
 app.use(session({
@@ -60,27 +91,39 @@ app.use(session({
 }));
 
 //---> LOGIN
-app.post('/login', function(req, res) {
+app.post('/login',
+  passport.authenticate('local', { failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect('/');
+  });
 
-  var user = req.body;
-  var userEmail = user[0].email;
-  var userPass = user[0].password;
+app.get('/logout',
+  function(req, res){
+    req.logout();
+    res.redirect('/');
+  });
 
-  User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
-    try {
-
-      var emailChecked = users[0].email;
-
-    } catch (e) {
-      err = "LOGIN FAILED";
-    }
-    if(err) {
-      console.log("ERROR: [GET LOGIN] ", err);
-      res.status(500);
-    }
-    res.json(users);
-  })
-});
+// app.post('/login', function(req, res) {
+//
+//   var user = req.body;
+//   var userEmail = user[0].email;
+//   var userPass = user[0].password;
+//
+//   User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
+//     try {
+//
+//       var emailChecked = users[0].email;
+//
+//     } catch (e) {
+//       err = "LOGIN FAILED";
+//     }
+//     if(err) {
+//       console.log("ERROR: [GET LOGIN] ", err);
+//       res.status(500);
+//     }
+//     res.json(users);
+//   })
+// });
 
 //---> CREATE TRANSACTION
 app.post('/transaction', function(req, res) {
