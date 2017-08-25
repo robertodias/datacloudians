@@ -9,6 +9,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
 var app = express();
+
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,15 +38,16 @@ mongoose.connect(dbConn, {
 var db = mongoose.connection;
 var Transaction = require('./models/transaction.js');
 var User = require('./models/user.js');
+
+//MONGO LOGs
 db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
 
 //------ APIs DEFINITION -------
 app.use(session({
   secret: properties.apikey,
   saveUninitialized: false,
-  resave: true,
+  resave: false,
   name: "id",
-  loggedUser: null,
   cookie:{
           path: '/',
           httpOnly: true,
@@ -61,28 +63,23 @@ app.use(session({
 //---> LOGIN
 app.post('/login', function(req, res) {
 
-  var loggedUser = req.body;
-  var userEmail = loggedUser[0].email;
-  var userPass = loggedUser[0].password;
+  var user = req.body;
+  var userEmail = user[0].email;
+  var userPass = user[0].password;
 
   User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
     try {
-      if (typeof users[0] === "undefined") {
-        throw 'User Not Found!';
-      } else {
-        req.session.loggedUser = users[0];
-      }
+
+      var emailChecked = users[0].email;
+
     } catch (e) {
       err = "LOGIN FAILED";
     }
     if(err) {
       console.log("ERROR: [GET LOGIN] ", err);
-      res.status(400);
+      res.status(500);
     }
-    req.session.save();
-    res.json({ "alphaCrypt" : req.session.id,
-               "user" : userEmail
-            });
+    res.json(users);
   })
 });
 
@@ -137,27 +134,23 @@ app.post('/transaction', function(req, res) {
 //---> CREATE USER
 app.post('/user', function(req, res) {
   var user = req.body;
+
   User.create(user, function(err, users) {
-      if(err) {
-        console.log("ERROR: [CREATE USER] ", err);
-      }
-      res.json(users);
+    if(err) {
+      console.log("ERROR: [CREATE USER] ", err);
+    }
+    res.json(users);
   })
 });
 
 //---> GET USER
-app.get('/user/:dc_prime', function(req, res) {
-  if (req.session.id == req.params.dc_prime) {
-    User.find().sort("-balance").exec(function(err, users) {
-      if(err) {
-        console.log("ERROR: [GET USER] ", err);
-      }
-      res.json(users);
-    })
-  } else {
-    //INVALID
-    res.json(user);
-  }
+app.get('/user', function(req, res) {
+  User.find().sort("-balance").exec(function(err, users) {
+    if(err) {
+      console.log("ERROR: [GET USER] ", err);
+    }
+    res.json(users);
+  })
 });
 
 //---> DELETE USER
