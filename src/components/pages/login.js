@@ -4,6 +4,7 @@
 import React from 'react';
 import {Col, Well, Form, FormControl, FormGroup, ControlLabel, Button} from 'react-bootstrap';
 import {findDOMNode} from 'react-dom';
+import sha1 from 'sha1';
 
 //IMPORT AXIOS
 import axios from 'axios';
@@ -19,20 +20,21 @@ import {postLogin, resetLoginButtonForm} from '../../actions/loginActions';
 class Login extends React.Component {
 
   handleSubmit() {
+    const hash = sha1(findDOMNode(this.refs.passValue).value);
     const user=[{
-      //_id: will come  from MongoDB
-      email: findDOMNode(this.refs.email).value,
-      password: findDOMNode(this.refs.password).value
+      email: findDOMNode(this.refs.emailValue).value,
+      password: hash
 
     }]
+    console.log(user);
     this.props.postLogin(user);
   }
 
   resetForm() {
     // RESET FORM AND BUTTON
     this.props.resetLoginButtonForm();
-    findDOMNode(this.refs.email).value = '';
-    findDOMNode(this.refs.password).value = '';
+    findDOMNode(this.refs.emailValue).value = '';
+    findDOMNode(this.refs.passValue).value = '';
   }
 
   render() {
@@ -46,7 +48,7 @@ class Login extends React.Component {
                   Email
                 </Col>
                 <Col sm={8}>
-                  <FormControl ref="email" placeholder="Email" />
+                  <FormControl ref="emailValue" type="email" placeholder="Email" />
                 </Col>
               </FormGroup>
 
@@ -55,7 +57,7 @@ class Login extends React.Component {
                   Password
                 </Col>
                 <Col sm={8}>
-                  <FormControl ref="password" placeholder="Password" />
+                  <FormControl ref="passValue" type="password" placeholder="Password" />
                 </Col>
               </FormGroup>
               <FormGroup>

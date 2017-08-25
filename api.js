@@ -28,6 +28,7 @@ var dbConn = 'mongodb://' + properties.dbuser
 
 //IMPORT MONGO
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 mongoose.connect(dbConn, {
   useMongoClient: true,
   /* other options */
@@ -38,46 +39,13 @@ var Transaction = require('./models/transaction.js');
 var User = require('./models/user.js');
 db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
 
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
-
-passport.use(new LocalStrategy({
-    usernameField: 'email'
-  },
-  function(username, password, done) {
-    User.findOne({ username: username }, function(err, user) {
-      if (err) { return done(err); }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
-      }
-      if (!user.validPassword(password)) {
-        return done(null, false, { message: 'Incorrect password.' });
-      }
-      return done(null, user);
-    });
-  }
-));
-
-passport.serializeUser(function(user, cb) {
-  cb(null, user.id);
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.deserializeUser(function(id, cb) {
-  db.users.findById(id, function (err, user) {
-    if (err) { return cb(err); }
-    cb(null, user);
-  });
-});
-
 //------ APIs DEFINITION -------
 app.use(session({
   secret: properties.apikey,
   saveUninitialized: false,
-  resave: false,
+  resave: true,
   name: "id",
+  loggedUser: null,
   cookie:{
           path: '/',
           httpOnly: true,
@@ -91,39 +59,32 @@ app.use(session({
 }));
 
 //---> LOGIN
-app.post('/login',
-  passport.authenticate('local', { failureRedirect: '/login' }),
-  function(req, res) {
-    res.redirect('/');
-  });
+app.post('/login', function(req, res) {
 
-app.get('/logout',
-  function(req, res){
-    req.logout();
-    res.redirect('/');
-  });
+  var loggedUser = req.body;
+  var userEmail = loggedUser[0].email;
+  var userPass = loggedUser[0].password;
 
-// app.post('/login', function(req, res) {
-//
-//   var user = req.body;
-//   var userEmail = user[0].email;
-//   var userPass = user[0].password;
-//
-//   User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
-//     try {
-//
-//       var emailChecked = users[0].email;
-//
-//     } catch (e) {
-//       err = "LOGIN FAILED";
-//     }
-//     if(err) {
-//       console.log("ERROR: [GET LOGIN] ", err);
-//       res.status(500);
-//     }
-//     res.json(users);
-//   })
-// });
+  User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
+    try {
+      if (typeof users[0] === "undefined") {
+        throw 'User Not Found!';
+      } else {
+        req.session.loggedUser = users[0];
+      }
+    } catch (e) {
+      err = "LOGIN FAILED";
+    }
+    if(err) {
+      console.log("ERROR: [GET LOGIN] ", err);
+      res.status(400);
+    }
+    req.session.save();
+    res.json({ "alphaCrypt" : req.session.id,
+               "user" : userEmail
+            });
+  })
+});
 
 //---> CREATE TRANSACTION
 app.post('/transaction', function(req, res) {
@@ -176,23 +137,27 @@ app.post('/transaction', function(req, res) {
 //---> CREATE USER
 app.post('/user', function(req, res) {
   var user = req.body;
-
   User.create(user, function(err, users) {
-    if(err) {
-      console.log("ERROR: [CREATE USER] ", err);
-    }
-    res.json(users);
+      if(err) {
+        console.log("ERROR: [CREATE USER] ", err);
+      }
+      res.json(users);
   })
 });
 
 //---> GET USER
-app.get('/user', function(req, res) {
-  User.find().sort("-balance").exec(function(err, users) {
-    if(err) {
-      console.log("ERROR: [GET USER] ", err);
-    }
-    res.json(users);
-  })
+app.get('/user/:dc_prime', function(req, res) {
+  if (req.session.id == req.params.dc_prime) {
+    User.find().sort("-balance").exec(function(err, users) {
+      if(err) {
+        console.log("ERROR: [GET USER] ", err);
+      }
+      res.json(users);
+    })
+  } else {
+    //INVALID
+    res.json(user);
+  }
 });
 
 //---> DELETE USER

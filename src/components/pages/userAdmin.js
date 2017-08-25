@@ -14,6 +14,7 @@ import {bindActionCreators} from 'redux';
 
 //OUR ACTIONS
 import {postUser, deleteUser, getUser, resetSaveButtonForm} from '../../actions/userActions';
+import sha1 from 'sha1';
 
 class UserAdmin extends React.Component{
 
@@ -22,13 +23,13 @@ class UserAdmin extends React.Component{
   }
 
   handleSubmit() {
+    const hash = sha1(findDOMNode(this.refs.password).value);
     const user=[{
       //_id: will come  from MongoDB
       name: findDOMNode(this.refs.name).value,
       balance: findDOMNode(this.refs.balance).value,
       email: findDOMNode(this.refs.email).value,
-      password: findDOMNode(this.refs.password).value
-
+      password: hash
     }]
     this.props.postUser(user);
   }
@@ -82,7 +83,7 @@ class UserAdmin extends React.Component{
               <FormGroup controlId="email" validationState={this.props.validation}>
                 <ControlLabel>Email</ControlLabel>
                 <FormControl
-                  type="text"
+                  type="email"
                   placeholder="Enter your email..."
                   ref="email"
                 />
@@ -91,7 +92,7 @@ class UserAdmin extends React.Component{
               <FormGroup controlId="password" validationState={this.props.validation}>
                 <ControlLabel>Password</ControlLabel>
                 <FormControl
-                  type="text"
+                  type="password"
                   placeholder="Enter a Password..."
                   ref="password"
                 />
