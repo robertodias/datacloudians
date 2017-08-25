@@ -2,6 +2,7 @@
 var express = require('express');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var helmet = require('helmet');
 
 //Connect-Mongo
 const session = require('express-session');
@@ -9,11 +10,10 @@ const MongoStore = require('connect-mongo')(session);
 
 var app = express();
 
+app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-
-
 
 //Import Properties Reader
 var properties = require('./properties.json');
@@ -29,7 +29,11 @@ var dbConn = 'mongodb://' + properties.dbuser
 
 //IMPORT MONGO
 var mongoose = require('mongoose');
-mongoose.connect(dbConn);
+mongoose.Promise = global.Promise;
+mongoose.connect(dbConn, {
+  useMongoClient: true,
+  /* other options */
+});
 
 var db = mongoose.connection;
 var Transaction = require('./models/transaction.js');
@@ -39,18 +43,45 @@ var User = require('./models/user.js');
 db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
 
 //------ APIs DEFINITION -------
-
-//STEUP A SESSION
 app.use(session({
-  secret: 'MySecretPassword',
+  secret: properties.apikey,
   saveUninitialized: false,
   resave: false,
-  cookie: {maxAge: 2 * 24 * 60 * 60 * 1000}, //2 days in miliseconds
+  name: "id",
+  cookie:{
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          maxAge: 2 * 24 * 60 * 60 * 1000
+         }, //2 days in miliseconds
   store: new MongoStore({
     mongooseConnection: db,
     ttl: 2 * 24 * 60 * 60 //2 days in seconds
   })
-}))
+}));
+
+//---> LOGIN
+app.post('/login', function(req, res) {
+
+  var user = req.body;
+  var userEmail = user[0].email;
+  var userPass = user[0].password;
+
+  User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
+    try {
+
+      var emailChecked = users[0].email;
+
+    } catch (e) {
+      err = "LOGIN FAILED";
+    }
+    if(err) {
+      console.log("ERROR: [GET LOGIN] ", err);
+      res.status(500);
+    }
+    res.json(users);
+  })
+});
 
 //---> CREATE TRANSACTION
 app.post('/transaction', function(req, res) {
@@ -94,13 +125,11 @@ app.post('/transaction', function(req, res) {
      })
    } else {
      err = "INVALID TRANSACTION";
-     console.log("ERROR: [POST BOOKS] ", err);
-     res.json({ "error": "INVALID TRANSACTION" });
+     res.status(500);
    }
   })
 
 })
-
 
 //---> CREATE USER
 app.post('/user', function(req, res) {
@@ -158,7 +187,6 @@ app.put('/user/:_id', function(req, res) {
   });
 
 });
-
 // END APIs
 
 app.listen(3001, function(err){

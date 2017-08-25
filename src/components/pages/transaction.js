@@ -18,6 +18,14 @@ import {postTransaction, getTransaction, resetSaveButtonForm} from '../../action
 
 class Transaction extends React.Component{
 
+  componentWillMount () {
+    const history = this.props.history;
+    console.log(this.props);
+    if (false) {
+      history.push('/'); // redirects the user to '/'
+    }
+  }
+
   componentDidMount() {
     this.props.getUser();
   }
