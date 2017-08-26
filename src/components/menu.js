@@ -23,19 +23,23 @@ class Menu extends React.Component {
             <LinkContainer to="/">
               <NavItem eventKey={2}>My Account</NavItem>
             </LinkContainer>
-            <LinkContainer to="transfer">
-              <NavItem eventKey={3}>Transfer</NavItem>
+            <LinkContainer to="about">
+              <NavItem eventKey={3}>About</NavItem>
             </LinkContainer>
           </Nav>
           <Nav pullRight>
-            <LinkContainer to="about">
-              <NavItem eventKey={1}>About</NavItem>
+
+            <LinkContainer to="transfer">
+              <NavItem eventKey={1}>Transfer</NavItem>
             </LinkContainer>
             <LinkContainer to="login">
               <NavItem eventKey={2}>Login</NavItem>
             </LinkContainer>
+            <LinkContainer to="logout">
+              <NavItem eventKey={3}>Logout</NavItem>
+            </LinkContainer>
             <LinkContainer to="admin">
-              <NavItem eventKey={3}>Admin</NavItem>
+              <NavItem eventKey={4}>Admin</NavItem>
             </LinkContainer>
           </Nav>
         </Navbar.Collapse>

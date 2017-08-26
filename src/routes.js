@@ -7,12 +7,17 @@ import {Router, Route, IndexRoute, browserHistory} from 'react-router';
 
 //Import React Pages
 import Main from './main';
-import EnsureLoggedInContainer from './components/EnsureLoggedInContainer';
+
+// Importing Page Components
 import Login from './components/pages/login';
 import About from './components/pages/about';
 import TeamInfo from './components/pages/teamInfo';
 import UserAdmin from './components/pages/userAdmin';
 import Transaction from './components/pages/transaction';
+
+// Importing Authentiction Check components
+import CheckIsLogged from './components/authentication/checkIsLogged';
+import Logout from './components/authentication/logout';
 
 const routes = (
   <Router history={browserHistory}>
@@ -20,8 +25,9 @@ const routes = (
       <IndexRoute component={TeamInfo} />
       <Route path="/about" component={About}/>
       <Route path="/login" component={Login} />
+      <Route path="/logout" component={Logout} />
 
-      <Route component={EnsureLoggedInContainer}>
+      <Route component={CheckIsLogged}>
         <Route path="/admin" component={UserAdmin} />
         <Route path="/transfer" component={Transaction}/>
       </Route>

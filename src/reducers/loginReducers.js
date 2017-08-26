@@ -36,6 +36,20 @@ export function loginReducers(state=initialState, action){
                 redirectUrl: action.url,
               }
         break;
+
+    case "GET_LOGOUT":
+      return  {...state,
+                user: null
+              }
+      break;
+
+    case "GET_CHECK_AUTH_ERROR":
+      return {...state,
+            user: null,
+            msg: null,
+            style: 'danger',
+            validation: null}
+      break;
   }
   return state;
 }

@@ -19,6 +19,7 @@ import {postLogin, resetLoginButtonForm, checkAuth} from '../../actions/loginAct
 
 
 class Login extends React.Component {
+
   componentDidMount() {
     if (!this.props.user) {
       this.props.checkAuth();
@@ -39,7 +40,6 @@ class Login extends React.Component {
       password: hash
 
     }]
-    console.log(user);
     this.props.postLogin(user);
   }
 

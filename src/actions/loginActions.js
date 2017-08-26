@@ -31,11 +31,25 @@ export function checkAuth() {
       dispatch({type:"POST_LOGIN", user:response.data})
     })
     .catch(function(err) {
-      dispatch({type:"POST_LOGIN_REJECTED", payload:"Authentication error."})
+      dispatch({type:"GET_CHECK_AUTH_ERROR", payload:null})
     })
   }
 }
 
+// Previous URL stored for redirect after login
 export function setRedirectUrl(url) {
-  dispatch({ type:"SET_REDIRECT_URL", url: url });
+  return { type:"SET_REDIRECT_URL", url: url };
+}
+
+// Logout action
+export function logout() {
+  return function(dispatch) {
+    axios.get("/api/logout")
+    .then(function(response){
+      dispatch({type:"GET_LOGOUT", user:null})
+    })
+    .catch(function(err) {
+      dispatch({type:"GET_LOGOUT_ERROR", payload:"Unable to logout."})
+    })
+  }
 }

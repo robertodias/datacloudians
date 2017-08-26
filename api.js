@@ -40,14 +40,15 @@ var Transaction = require('./models/transaction.js');
 var User = require('./models/user.js');
 
 //MONGO LOGs
-db.on('error', console.error.bind(console, '# MongoDB - connection error: '));
+db.on('error', console.error.bind(console, 'ERROR: [MongoDB: connection error] '));
 
 //------ APIs DEFINITION -------
 app.use(session({
   secret: properties.apikey,
   saveUninitialized: false,
   resave: false,
-  name: "id",
+  unset: 'destroy',
+  name: 'id',
   cookie:{
           path: '/',
           domain: 'localhost',
@@ -77,8 +78,13 @@ app.post('/login', function(req, res) {
 
   User.findOne({ "email" : userEmail, "password" : userPass }).exec(function(err, user) {
     try {
-      req.session.user = user;
-      } catch (e) {
+        if (user === null) {
+          err = "LOGIN FAILED";
+          res.status(403);
+        } else {
+          req.session.user = user;
+        }
+    } catch (e) {
       err = "LOGIN FAILED";
     }
     if (err) {
@@ -89,6 +95,18 @@ app.post('/login', function(req, res) {
   })
 });
 
+//---> LOGOUT USER
+app.get('/logout', function(req, res) {
+  req.session.cookie.expires = new Date(0);
+  req.session.destroy(function(error) {
+    if (error) {
+      res.sendStatus(500);
+      return;
+    }
+    res.sendStatus(200);
+  });
+});
+
 //---> CREATE TRANSACTION
 app.post('/transaction', function(req, res) {
   var transaction = req.body;
@@ -97,7 +115,7 @@ app.post('/transaction', function(req, res) {
   var amount = transaction[0].amount;
   var minusAmount = -1 * amount;
 
-  console.log("TO: " + userTo + ", FROM: " + userFrom + ", TOTAL: " + amount);
+  //console.log("TO: " + userTo + ", FROM: " + userFrom + ", TOTAL: " + amount);
 
   //Check if userFROM have credit
   User.findById(userFrom).exec(function(err, user1) {
@@ -106,21 +124,21 @@ app.post('/transaction', function(req, res) {
     }
     //Check Current userFrom balance
     var balanceFrom = user1.balance;
-    console.log("START: " + balanceFrom);
+    //console.log("START: " + balanceFrom);
     //If the amount is valid update it on userTo and remove it from userFrom
     if (amount <= balanceFrom && amount > 0) {
       User.findOneAndUpdate( { _id : userFrom }, { $inc: { "balance" : minusAmount } }, {upsert : true}).exec(function(err, user1) {
         if(err) {
           console.log("ERROR: [UPDATING USER FROM] ", err);
         }
-        console.log("SUCESSO: " + userFrom + ", value " + minusAmount);
+        console.log("SUCCESS: " + userFrom + ", value " + minusAmount);
       })
 
       User.findOneAndUpdate({ _id : userTo }, { $inc: { "balance" : amount } }, { upsert : true }).exec(function(err, user2) {
         if(err) {
           console.log("ERROR: [UPDATING USER TO] ", err);
         }
-        console.log("SUCESSO: " + userTo + ", value " + amount);
+        console.log("SUCCESS: " + userTo + ", value " + amount);
       })
 
       Transaction.create(transaction, function(err, transactions) {
