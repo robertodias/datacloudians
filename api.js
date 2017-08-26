@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 //Import Properties Reader
-var properties = require('./properties.json');
+const properties = require('./properties.json');
 
 //MONGO CONNECTION STRING
 var dbConn = 'mongodb://' + properties.dbuser
@@ -50,8 +50,9 @@ app.use(session({
   name: "id",
   cookie:{
           path: '/',
+          domain: 'localhost',
           httpOnly: true,
-          secure: true,
+          secure: false,
           maxAge: 2 * 24 * 60 * 60 * 1000
          }, //2 days in miliseconds
   store: new MongoStore({
@@ -60,26 +61,31 @@ app.use(session({
   })
 }));
 
+app.get('/checkAuth', function(req, res) {
+  if (req.session && req.session.user) {
+    res.json(req.session.user);
+  } else {
+    res.status(403).send({msg: 'Authentication Error.'});
+  }
+});
+
 //---> LOGIN
 app.post('/login', function(req, res) {
-
   var user = req.body;
   var userEmail = user[0].email;
   var userPass = user[0].password;
 
-  User.find({ "email" : userEmail, "password" : userPass }).exec(function(err, users) {
+  User.findOne({ "email" : userEmail, "password" : userPass }).exec(function(err, user) {
     try {
-
-      var emailChecked = users[0].email;
-
-    } catch (e) {
+      req.session.user = user;
+      } catch (e) {
       err = "LOGIN FAILED";
     }
-    if(err) {
+    if (err) {
       console.log("ERROR: [GET LOGIN] ", err);
-      res.status(500);
+      res.status(403);
     }
-    res.json(users);
+    res.json(user);
   })
 });
 

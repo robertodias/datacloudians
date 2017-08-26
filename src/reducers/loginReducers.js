@@ -1,12 +1,16 @@
 "use strict"
 
+const initialState = {
+  user: null,
+  redirectURL: '/' // default url to redirect after login
+};
 
-export function loginReducers(state={user:[]}, action){
+export function loginReducers(state=initialState, action){
   switch (action.type) {
 
     case "POST_LOGIN":
       return {...state,
-              user: [...state.user, ...action.payload],
+              user: action.user,
               msg: 'Welcome!',
               style: 'success',
               validation: 'success'}
@@ -27,6 +31,11 @@ export function loginReducers(state={user:[]}, action){
               }
         break;
 
+    case "RESET_LOGIN_BUTTON":
+        return {...state,
+                redirectUrl: action.url,
+              }
+        break;
   }
   return state;
 }

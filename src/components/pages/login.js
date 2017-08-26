@@ -2,6 +2,7 @@
 
 //IMPORT REACT
 import React from 'react';
+import {browserHistory} from 'react-router';
 import {Col, Well, Form, FormControl, FormGroup, ControlLabel, Button} from 'react-bootstrap';
 import {findDOMNode} from 'react-dom';
 import sha1 from 'sha1';
@@ -14,10 +15,22 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 //OUR ACTIONS
-import {postLogin, resetLoginButtonForm} from '../../actions/loginActions';
+import {postLogin, resetLoginButtonForm, checkAuth} from '../../actions/loginActions';
 
 
 class Login extends React.Component {
+  componentDidMount() {
+    if (!this.props.user) {
+      this.props.checkAuth();
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.props.user &&
+        this.props.redirectURL) {
+        browserHistory.replace(this.props.redirectURL);
+    }
+  }
 
   handleSubmit() {
     const hash = sha1(findDOMNode(this.refs.passValue).value);
@@ -80,6 +93,7 @@ class Login extends React.Component {
 function mapStateToProps(state) {
   return {
     user: state.login.user,
+    redirectURL: state.login.redirectURL,
     msg: state.login.msg,
     style: state.login.style,
     validation: state.login.validation
@@ -89,7 +103,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     postLogin,
-    resetLoginButtonForm
+    resetLoginButtonForm,
+    checkAuth
   }, dispatch);
 }
 

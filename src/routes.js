@@ -7,6 +7,7 @@ import {Router, Route, IndexRoute, browserHistory} from 'react-router';
 
 //Import React Pages
 import Main from './main';
+import EnsureLoggedInContainer from './components/EnsureLoggedInContainer';
 import Login from './components/pages/login';
 import About from './components/pages/about';
 import TeamInfo from './components/pages/teamInfo';
@@ -16,11 +17,15 @@ import Transaction from './components/pages/transaction';
 const routes = (
   <Router history={browserHistory}>
     <Route path="/" component={Main}>
-      <IndexRoute component={TeamInfo}/>
-      <Route path="/admin" component={UserAdmin}/>
+      <IndexRoute component={TeamInfo} />
       <Route path="/about" component={About}/>
-      <Route path="/transfer" component={Transaction}/>
-      <Route path="/login" component={Login}/>
+      <Route path="/login" component={Login} />
+
+      <Route component={EnsureLoggedInContainer}>
+        <Route path="/admin" component={UserAdmin} />
+        <Route path="/transfer" component={Transaction}/>
+      </Route>
+
     </Route>
   </Router>
 )
