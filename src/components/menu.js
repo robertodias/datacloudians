@@ -31,8 +31,11 @@ class Menu extends React.Component {
             <LinkContainer to="about">
               <NavItem eventKey={1}>About</NavItem>
             </LinkContainer>
+            <LinkContainer to="login">
+              <NavItem eventKey={2}>Login</NavItem>
+            </LinkContainer>
             <LinkContainer to="admin">
-              <NavItem eventKey={2}>Admin</NavItem>
+              <NavItem eventKey={3}>Admin</NavItem>
             </LinkContainer>
           </Nav>
         </Navbar.Collapse>
