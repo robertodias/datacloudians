@@ -38236,7 +38236,7 @@ function loginReducers() {
       return _extends({}, state, {
         user: null,
         msg: null,
-        style: 'danger',
+        style: 'primary',
         validation: null });
       break;
   }

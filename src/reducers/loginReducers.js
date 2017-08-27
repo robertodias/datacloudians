@@ -47,7 +47,7 @@ export function loginReducers(state=initialState, action){
       return {...state,
             user: null,
             msg: null,
-            style: 'danger',
+            style: 'primary',
             validation: null}
       break;
   }
