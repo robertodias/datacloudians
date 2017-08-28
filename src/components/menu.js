@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {Router, Route, IndexRoute, browserHistory} from 'react-router';
-import {LinkContainer} from 'react-router-bootstrap';
+import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Nav, NavItem, Navbar, Badge} from 'react-bootstrap';
 
 class Menu extends React.Component {
@@ -17,14 +17,11 @@ class Menu extends React.Component {
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
-            <LinkContainer to="/">
+            <IndexLinkContainer to="/">
               <NavItem eventKey={1}>Team</NavItem>
-            </LinkContainer>
-            <LinkContainer to="/">
-              <NavItem eventKey={2}>My Account</NavItem>
-            </LinkContainer>
+            </IndexLinkContainer>
             <LinkContainer to="about">
-              <NavItem eventKey={3}>About</NavItem>
+              <NavItem eventKey={2}>About</NavItem>
             </LinkContainer>
           </Nav>
           <Nav pullRight>
