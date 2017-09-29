@@ -25,11 +25,11 @@ const routes = (
       <IndexRoute component={TeamInfo} />
       <Route path="/about" component={About}/>
       <Route path="/login" component={Login} />
-      <Route path="/logout" component={Logout} />
 
       <Route component={CheckIsLogged}>
         <Route path="/admin" component={UserAdmin} />
-        <Route path="/transfer" component={Transaction}/>
+        <Route path="/transfer" component={Transaction} />
+        <Route path="/logout" component={Logout} />
       </Route>
 
     </Route>
