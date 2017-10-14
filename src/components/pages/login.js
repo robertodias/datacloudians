@@ -28,8 +28,8 @@ class Login extends React.Component {
 
   componentDidUpdate() {
     if (this.props.user &&
-        this.props.redirectURL) {
-        browserHistory.replace(this.props.redirectURL);
+        this.props.redirectUrl) {
+        browserHistory.replace(this.props.redirectUrl);
     }
   }
 
@@ -93,7 +93,7 @@ class Login extends React.Component {
 function mapStateToProps(state) {
   return {
     user: state.login.user,
-    redirectURL: state.login.redirectURL,
+    redirectUrl: state.login.redirectUrl,
     msg: state.login.msg,
     style: state.login.style,
     validation: state.login.validation

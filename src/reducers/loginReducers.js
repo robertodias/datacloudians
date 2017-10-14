@@ -2,7 +2,7 @@
 
 const initialState = {
   user: null,
-  redirectURL: '/' // default url to redirect after login
+  redirectUrl: '/' // default url to redirect after login
 };
 
 export function loginReducers(state=initialState, action){
@@ -50,6 +50,18 @@ export function loginReducers(state=initialState, action){
             style: 'primary',
             validation: null}
       break;
+
+    case "OPEN_LOGOUT_MODAL":
+      return {...state,
+              showLogoutModal: true}
+      break;
+
+    case "CLOSE_LOGOUT_MODAL":
+      return {...state,
+              showLogoutModal: false,
+              redirectUrl: "/"}
+      break;
   }
+
   return state;
 }

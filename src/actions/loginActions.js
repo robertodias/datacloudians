@@ -53,3 +53,12 @@ export function logout() {
     })
   }
 }
+
+// Logout Modal Actions
+export function openLogoutModal() {
+  return { type : "OPEN_LOGOUT_MODAL", showLogoutModal : true };
+}
+
+export function closeLogoutModal() {
+  return { type : "CLOSE_LOGOUT_MODAL", showLogoutModal : false };
+}
