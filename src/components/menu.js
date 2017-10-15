@@ -1,12 +1,11 @@
-"use strict"
-
+// MAIN MENU
 import React from 'react';
 import {connect} from 'react-redux';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Nav, NavItem, Navbar, Badge} from 'react-bootstrap';
+import {Nav, NavItem, Navbar} from 'react-bootstrap';
 
-// Importing Authentiction Check components
-import CheckIsLogged from '../components/authentication/checkIsLogged';
+// Update REACT PropTypes
+import PropTypes from 'prop-types';
 
 class Menu extends React.Component {
   render() {
@@ -42,43 +41,46 @@ class Menu extends React.Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-      )
-    } else {
-      return (
-        <Navbar fixedTop>
-          <Navbar.Header>
-            <Navbar.Brand>
-              DC$ <span className="beta">beta</span>
-            </Navbar.Brand>
-            <Navbar.Toggle />
-          </Navbar.Header>
-          <Navbar.Collapse>
-            <Nav>
-              <IndexLinkContainer to="/">
-                <NavItem eventKey={1}>Team</NavItem>
-              </IndexLinkContainer>
-              <LinkContainer to="about">
-                <NavItem eventKey={2}>About</NavItem>
-              </LinkContainer>
-            </Nav>
-
-            <Nav pullRight>
-              <LinkContainer to="login">
-                <NavItem eventKey={1}>Login</NavItem>
-              </LinkContainer>
-            </Nav>
-          </Navbar.Collapse>
-        </Navbar>
-      )
+      );
     }
 
+    return (
+      <Navbar fixedTop>
+        <Navbar.Header>
+          <Navbar.Brand>
+              DC$ <span className="beta">beta</span>
+          </Navbar.Brand>
+          <Navbar.Toggle />
+        </Navbar.Header>
+        <Navbar.Collapse>
+          <Nav>
+            <IndexLinkContainer to="/">
+              <NavItem eventKey={1}>Team</NavItem>
+            </IndexLinkContainer>
+            <LinkContainer to="about">
+              <NavItem eventKey={2}>About</NavItem>
+            </LinkContainer>
+          </Nav>
+
+          <Nav pullRight>
+            <LinkContainer to="login">
+              <NavItem eventKey={1}>Login</NavItem>
+            </LinkContainer>
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
+    );
   }
 }
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
   return {
-    user: state.login.user
-  }
+    user: state.login.user,
+  };
 }
+
+Menu.propTypes = {
+  user: PropTypes.any,
+};
 
 export default connect(mapStateToProps)(Menu);
