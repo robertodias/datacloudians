@@ -1,11 +1,10 @@
-"use strict"
-//IMPORT React
+// IMPORT React
 import React from 'react';
 
-//IMPORT Router
+// IMPORT Router
 import {Router, Route, IndexRoute, browserHistory} from 'react-router';
 
-//Import React Pages
+// Import React Pages
 import Main from './main';
 
 // Importing Page Components
@@ -34,6 +33,6 @@ const routes = (
 
     </Route>
   </Router>
-)
+);
 
 export default routes;
