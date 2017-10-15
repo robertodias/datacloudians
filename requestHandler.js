@@ -1,6 +1,7 @@
-"use strict"
-import axios from 'axios';
+// Request Handler
 import React from  'react';
+import axios from 'axios';
+
 import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import {renderToString} from 'react-dom/server';
@@ -12,40 +13,35 @@ import routes from './src/routes';
 function handleRender(req, res) {
   axios
     .get('http://localhost:3001/user')
-    .then(response => {
-
-
+    .then(function response() {
       // STEP-1 CREATE REDUX STORE ON SERVER-SIDE
-      const store = createStore(reducers)
+      const store = createStore(reducers);
       // STEP-2 GET INITIAL STATE FROM STORE
       const initialState = JSON.stringify(store.getState())
-                          .replace(/<\/script/g,'<\\/script')
-                          .replace(/<!--/g, '<\\!--');
+        .replace(/<\/script/g, '<\\/script')
+        .replace(/<!--/g, '<\\!--');
       // STEP-3 REACT-ROUTER ON SERVER TO INTERCEPT CLIENT REQUEST AND DEFINE BEHAVIOR
       const Routes = {
         routes: routes,
-        location: req.url
-      }
-      match(Routes, function(error, redirect, props) {
+        location: req.url,
+      };
+      match(Routes, function handler(error, redirect, props) {
         if (error) {
-          res.status(500).send("Error processing the Request.")
+          res.status(500).send('Error processing the Request.');
         } else if (redirect) {
-          res.status(302, redirect.pathname + redirect.search)
+          res.status(302, redirect.pathname + redirect.search);
         } else if (props) {
-          const reactComponent = renderToString (
-              <Provider store={store}>
-                <RouterContext {...props} />
-              </Provider>
-          )
-          res.status(200).render('index', {reactComponent, initialState})
+          const reactComponent = renderToString(
+            <Provider store={store}>
+              <RouterContext {...props} />
+            </Provider>
+          );
+          res.status(200).render('index', {reactComponent, initialState});
         } else {
-          res.status(404).send("Page Not Found.")
+          res.status(404).send('Page Not Found.');
         }
-      })
-
-
-    })
-    .catch(error => console.log('#Initial Server-side rendering error'));
+      });
+    }).catch(function error() { res.status(500).send('#Initial Server-side rendering error');});
 }
 
 module.exports = handleRender;

@@ -1,25 +1,25 @@
-//API Reverse Proxy
-var express = require('express');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var helmet = require('helmet');
+// API Application (BackEnd)
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const helmet = require('helmet');
 
-//Connect-Mongo
+// Connect-Mongo
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
-var app = express();
+const app = express();
 
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-//Import Properties Reader
+// Import Properties Reader
 const properties = require('./properties.json');
 
-//MONGO CONNECTION STRING
-var dbConn = 'mongodb://' + properties.dbuser
+// MONGO CONNECTION STRING
+const dbConn = 'mongodb://' + properties.dbuser
                           + ':'
                           + properties.dbpass
                           + '@'
@@ -27,42 +27,42 @@ var dbConn = 'mongodb://' + properties.dbuser
                           + '/'
                           + properties.dbname;
 
-//IMPORT MONGO
-var mongoose = require('mongoose');
+// IMPORT MONGO
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 mongoose.connect(dbConn, {
   useMongoClient: true,
   /* other options */
 });
 
-var db = mongoose.connection;
-var Transaction = require('./models/transaction.js');
-var User = require('./models/user.js');
+const db = mongoose.connection;
+const Transaction = require('./models/transaction.js');
+const User = require('./models/user.js');
 
-//MONGO LOGs
+// MONGO LOGs
 db.on('error', console.error.bind(console, 'ERROR: [MongoDB: connection error] '));
 
-//------ APIs DEFINITION -------
+// ------ APIs DEFINITION -------
 app.use(session({
   secret: properties.apikey,
   saveUninitialized: false,
   resave: false,
   unset: 'destroy',
   name: 'id',
-  cookie:{
-          path: '/',
-          domain: 'localhost',
-          httpOnly: true,
-          secure: false,
-          maxAge: 2 * 24 * 60 * 60 * 1000
-         }, //2 days in miliseconds
+  cookie: {
+    path: '/',
+    domain: 'localhost',
+    httpOnly: true,
+    secure: false,
+    maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days in miliseconds
+  },
   store: new MongoStore({
     mongooseConnection: db,
-    ttl: 2 * 24 * 60 * 60 //2 days in seconds
-  })
+    ttl: 2 * 24 * 60 * 60, // 2 days in seconds
+  }),
 }));
 
-app.get('/checkAuth', function(req, res) {
+app.get('/checkAuth', function checkAuth(req, res) {
   if (req.session && req.session.user) {
     res.json(req.session.user);
   } else {
@@ -70,35 +70,30 @@ app.get('/checkAuth', function(req, res) {
   }
 });
 
-//---> LOGIN
-app.post('/login', function(req, res) {
-  var user = req.body;
-  var userEmail = user[0].email;
-  var userPass = user[0].password;
+// ---> LOGIN
+app.post('/login', function login(req, res) {
+  const user = req.body;
+  const userEmail = user[0].email;
+  const userPass = user[0].password;
 
-  User.findOne({ "email" : userEmail, "password" : userPass }).exec(function(err, user) {
+  User.findOne({ 'email': userEmail, 'password': userPass }).exec(function findLogin(err, userCheck) {
     try {
-        if (user === null) {
-          err = "LOGIN FAILED";
-          res.status(403);
-        } else {
-          req.session.user = user;
-        }
+      if (userCheck === null) {
+        res.status(403, 'LOGIN AUTHENTICATION FAILED');
+      } else {
+        req.session.user = userCheck;
+      }
     } catch (e) {
-      err = "LOGIN FAILED";
+      res.status(403, 'LOGIN FAILED');
     }
-    if (err) {
-      console.log("ERROR: [GET LOGIN] ", err);
-      res.status(403);
-    }
-    res.json(user);
-  })
+    res.json(userCheck);
+  });
 });
 
-//---> LOGOUT USER
-app.get('/logout', function(req, res) {
+// ---> LOGOUT USER
+app.get('/logout', function logout(req, res) {
   req.session.cookie.expires = new Date(0);
-  req.session.destroy(function(error) {
+  req.session.destroy(function sessionDestroy(error) {
     if (error) {
       res.sendStatus(500);
       return;
@@ -107,115 +102,108 @@ app.get('/logout', function(req, res) {
   });
 });
 
-//---> CREATE TRANSACTION
-app.post('/transaction', function(req, res) {
-  var transaction = req.body;
-  var userTo = transaction[0].to;
-  var userFrom = transaction[0].from;
-  var amount = transaction[0].amount;
-  var minusAmount = -1 * amount;
+// ---> CREATE TRANSACTION
+app.post('/transaction', function transfer(req, res) {
+  const transaction = req.body;
+  const userTo = transaction[0].to;
+  const userFrom = transaction[0].from;
+  const amount = transaction[0].amount;
+  const minusAmount = -1 * amount;
 
-  //console.log("TO: " + userTo + ", FROM: " + userFrom + ", TOTAL: " + amount);
-
-  //Check if userFROM have credit
-  User.findById(userFrom).exec(function(err, user1) {
-    if(err) {
-      console.log("ERROR: [GET USER FROM] ", err);
+  // Check if userFROM have credit
+  User.findById(userFrom).exec(function findUser(err, user1) {
+    if (err) {
+      res.status(500, 'ERROR: [GET USER FROM]');
     }
-    //Check Current userFrom balance
-    var balanceFrom = user1.balance;
-    //console.log("START: " + balanceFrom);
-    //If the amount is valid update it on userTo and remove it from userFrom
+    // Check Current userFrom balance
+    const balanceFrom = user1.balance;
+
+    // If the amount is valid update it on userTo and remove it from userFrom
     if (amount <= balanceFrom && amount > 0) {
-      User.findOneAndUpdate( { _id : userFrom }, { $inc: { "balance" : minusAmount } }, {upsert : true}).exec(function(err, user1) {
-        if(err) {
-          console.log("ERROR: [UPDATING USER FROM] ", err);
+      User.findOneAndUpdate( { _id: userFrom }, { $inc: { 'balance': minusAmount } }, {upsert: true})
+        .exec(function userFromUpdate(errFrom) {
+          if (errFrom) {
+            res.status(500, 'ERROR: [UPDATING USER FROM]');
+          }
+        });
+      User.findOneAndUpdate({ _id: userTo }, { $inc: { 'balance': amount } }, { upsert: true })
+        .exec(function userToUpdate(errTo) {
+          if (errTo) {
+            res.status(500, 'ERROR: [UPDATING USER TO]');
+          }
+        });
+      Transaction.create(transaction, function doTransfer(errTransfer, transactions) {
+        if (errTransfer) {
+          res.status(500, 'ERROR: [CREATING TRANSACTION]');
         }
-        console.log("SUCCESS: " + userFrom + ", value " + minusAmount);
-      })
-
-      User.findOneAndUpdate({ _id : userTo }, { $inc: { "balance" : amount } }, { upsert : true }).exec(function(err, user2) {
-        if(err) {
-          console.log("ERROR: [UPDATING USER TO] ", err);
-        }
-        console.log("SUCCESS: " + userTo + ", value " + amount);
-      })
-
-      Transaction.create(transaction, function(err, transactions) {
-       if(err) {
-         console.log("ERROR: [CREATE TRANSACTION] ", err);
-       }
-       res.json(transactions);
-     })
-   } else {
-     err = "INVALID TRANSACTION";
-     res.status(500);
-   }
-  })
-
-})
-
-//---> CREATE USER
-app.post('/user', function(req, res) {
-  var user = req.body;
-
-  User.create(user, function(err, users) {
-    if(err) {
-      console.log("ERROR: [CREATE USER] ", err);
+        res.json(transactions);
+      });
+    } else {
+      res.status(500, 'ERROR: [INVALID TRANSACTION]');
     }
-    res.json(users);
-  })
+  });
 });
 
-//---> GET USER
-app.get('/user', function(req, res) {
-  User.find().sort("-balance").exec(function(err, users) {
-    if(err) {
-      console.log("ERROR: [GET USER] ", err);
+// ---> CREATE USER
+app.post('/user', function user(req, res) {
+  const loadUser = req.body;
+
+  User.create(loadUser, function createUser(err, newUser) {
+    if (err) {
+      res.status(500, 'ERROR: [CREATING USER]');
     }
-    res.json(users);
-  })
+    res.json(newUser);
+  });
 });
 
-//---> DELETE USER
-app.delete('/user/:_id', function(req, res) {
-  var query = {_id: req.params._id};
-  User.remove(query, function(err, users) {
-    if(err) {
-      console.log("ERROR: [DELETE USER] ", err);
-    }
-    res.json(users);
-  })
-});
-
-//---> UPDATE USER
-app.put('/user/:_id', function(req, res) {
-  var user = req.user;
-  var query = req.params._id;
-
-  //In case the field does not exists
-  var update = {
-    '$set':{
-      balance:user.balance
-    }
-  };
-
-  //When TRUE, return the updated document
-  var options = {new: true};
-
-  User.findOneAndUpdate(query, update, options, function(err, users) {
-    if(err) {
-      console.log("ERROR: [FINDING USER BY ID] ", err);
+// ---> GET USER
+app.get('/user', function user(req, res) {
+  User.find().sort('-balance').exec(function getUser(err, users) {
+    if (err) {
+      res.status(500, 'ERROR: [CREATING LOADING USER]');
     }
     res.json(users);
   });
+});
 
+// ---> DELETE USER
+app.delete('/user/:_id', function user(req, res) {
+  const query = {_id: req.params._id};
+  User.remove(query, function removeUser(err, remUser) {
+    if (err) {
+      res.status(500, 'ERROR: [DELETING USER]');
+    }
+    res.json(remUser);
+  });
+});
+
+// ---> UPDATE USER
+app.put('/user/:_id', function user(req, res) {
+  const currentUser = req.user;
+  const query = req.params._id;
+
+  // In case the field does not exists
+  const update = {
+    '$set': {
+      balance: currentUser.balance,
+    },
+  };
+
+  // When TRUE, return the updated document
+  const options = {new: true};
+
+  User.findOneAndUpdate(query, update, options, function updateUser(err, users) {
+    if (err) {
+      res.status(500, 'ERROR: [UPDATING USER]');
+    }
+    res.json(users);
+  });
 });
 // END APIs
 
-app.listen(3001, function(err){
+app.listen(3001, function webApp(err) {
   if (err) {
     return console.log(err);
   }
-  console.log('API Server is listening on http://localhost:3001');
+  return console.log('API Server is listening on http://localhost:3001');
 });
