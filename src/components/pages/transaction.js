@@ -1,68 +1,36 @@
-"use strict"
-
-//IMPORT REACT
+// IMPORT REACT
 import React from 'react';
 import {Col, Row, Well, Panel, FormControl, FormGroup, ControlLabel, Button} from 'react-bootstrap';
 import {findDOMNode} from 'react-dom';
 import {connect} from 'react-redux';
 
-//IMPORT AXIOS
-import axios from 'axios';
-
-//IMPORT REDUX
+// IMPORT REDUX
 import {bindActionCreators} from 'redux';
 
-//OUR ACTIONS
+// OUR ACTIONS
 import {getUser} from '../../actions/userActions';
 import {postTransaction, getTransaction, resetSaveButtonForm} from '../../actions/transactionActions';
 
-class Transaction extends React.Component{
+// Update REACT PropTypes
+import PropTypes from 'prop-types';
 
-  componentWillMount () {
-    const history = this.props.history;
-    console.log(this.props);
-    if (false) {
-      history.push('/'); // redirects the user to '/'
-    }
-  }
-
+class Transaction extends React.Component {
   componentDidMount() {
     this.props.getUser();
   }
 
-  handleSubmit() {
-    const transaction=[{
-      //_id: will come  from MongoDB
-      from: findDOMNode(this.refs.from).value,
-      to: findDOMNode(this.refs.to).value,
-      description: findDOMNode(this.refs.description).value,
-      amount: findDOMNode(this.refs.amount).value
-    }]
-    this.props.postTransaction(transaction);
-  }
-
-  resetForm() {
-    // RESET FORM AND BUTTON
-    this.props.resetSaveButtonForm();
-    findDOMNode(this.refs.to).selected = false;
-    findDOMNode(this.refs.from).selected = false;
-    findDOMNode(this.refs.description).value = '';
-    findDOMNode(this.refs.amount).value = '';
-  }
-
   render() {
-
-    const userList = this.props.user.map(function(userArr) {
+    const userList = this.props.user.map(function transfer(userArr) {
       return (
         <option key={userArr._id} value={userArr._id}>{userArr.name}</option>
-      )
-    })
+      );
+    });
 
     return (
       <Well>
         <Row>
           <Col>
-            <Panel style={{marginTop:'10px'}}>
+            <Panel style={{marginTop: '10px'}}>
               <FormGroup controlId="formControlsSelectFrom">
                 <ControlLabel>Select your User</ControlLabel>
                 <FormControl ref="from" componentClass="select" placeholder="select">
@@ -96,15 +64,34 @@ class Transaction extends React.Component{
                 <FormControl.Feedback/>
               </FormGroup>
               <Button
-                onClick={(!this.props.msg)?(this.handleSubmit.bind(this)):(this.resetForm.bind(this))}
-                bsStyle={(!this.props.style)?("primary"):(this.props.style)}>
-                {(!this.props.msg)?("Confirm"):(this.props.msg)}
+                onClick={(!this.props.msg) ? (this.handleSubmit.bind(this)) : (this.resetForm.bind(this))}
+                bsStyle={(!this.props.style) ? ('primary') : (this.props.style)}>
+                {(!this.props.msg) ? ('Confirm') : (this.props.msg)}
               </Button>
             </Panel>
           </Col>
         </Row>
       </Well>
-    )
+    );
+  }
+
+  handleSubmit() {
+    const transaction = [{
+      from: findDOMNode(this.refs.from).value,
+      to: findDOMNode(this.refs.to).value,
+      description: findDOMNode(this.refs.description).value,
+      amount: findDOMNode(this.refs.amount).value,
+    }];
+    this.props.postTransaction(transaction);
+  }
+
+  resetForm() {
+    // RESET FORM AND BUTTON
+    this.props.resetSaveButtonForm();
+    findDOMNode(this.refs.to).selected = false;
+    findDOMNode(this.refs.from).selected = false;
+    findDOMNode(this.refs.description).value = '';
+    findDOMNode(this.refs.amount).value = '';
   }
 }
 
@@ -114,8 +101,8 @@ function mapStateToProps(state) {
     transaction: state.transaction.transaction,
     msg: state.transaction.msg,
     style: state.transaction.style,
-    validation: state.transaction.validation
-  }
+    validation: state.transaction.validation,
+  };
 }
 
 function mapDispatchToProps(dispatch) {
@@ -123,8 +110,18 @@ function mapDispatchToProps(dispatch) {
     postTransaction,
     getTransaction,
     getUser,
-    resetSaveButtonForm
+    resetSaveButtonForm,
   }, dispatch);
 }
+
+Transaction.propTypes = {
+  getUser: PropTypes.any,
+  user: PropTypes.any,
+  validation: PropTypes.any,
+  msg: PropTypes.any,
+  style: PropTypes.any,
+  postTransaction: PropTypes.any,
+  resetSaveButtonForm: PropTypes.any,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Transaction);

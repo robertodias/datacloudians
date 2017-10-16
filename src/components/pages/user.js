@@ -1,15 +1,11 @@
-"use strict"
-
-//IMPORT REACT
+// IMPORT REACT
 import React from 'react';
 import {Row, Col, Well} from 'react-bootstrap';
-import {connect} from 'react-redux';
 
-//IMPORT REDUX
-import {bindActionCreators} from 'redux';
+// Update REACT PropTypes
+import PropTypes from 'prop-types';
 
 class User extends React.Component {
-
   render() {
     return (
       <Well>
@@ -20,9 +16,13 @@ class User extends React.Component {
           </Col>
         </Row>
       </Well>
-    )
+    );
   }
-
 }
+
+User.propTypes = {
+  name: PropTypes.any,
+  balance: PropTypes.any,
+};
 
 export default User;

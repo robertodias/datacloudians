@@ -1,14 +1,12 @@
-"use strict"
-
-//IMPORT REACT
+// IMPORT REACT
 import React from 'react';
-import {Grid, Col, Row} from 'react-bootstrap';
+import {Grid, Row} from 'react-bootstrap';
 
-class About extends React.Component{
+class About extends React.Component {
   render() {
     return (
       <Grid>
-        <Row style={{marginTop:'15px'}}>
+        <Row style={{marginTop: '15px'}}>
           <div>
             <h2>DataCloudians (DC$)</h2>
             <br/>
