@@ -1,15 +1,14 @@
-"use strict"
+// IMPORT MONGOOSE
+const mongoose = require('mongoose');
 
-//IMPORT MONGOOSE
-var mongoose = require('mongoose');
-
-//DEFINE SCHEMA
-var userSchema = mongoose.Schema({
+// DEFINE SCHEMA
+const userSchema = mongoose.Schema({
   name: String,
   balance: Number,
   email: { type: String, unique: true, lowercase: true },
-  password: String
+  password: String,
 });
 
-var User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
 module.exports = User;

@@ -1,15 +1,14 @@
-"use strict"
+// IMPORT MONGOOSE
+const mongoose = require('mongoose');
 
-//IMPORT MONGOOSE
-var mongoose = require('mongoose');
-
-//DEFINE SCHEMA
-var transactionSchema = mongoose.Schema({
+// DEFINE SCHEMA
+const transactionSchema = mongoose.Schema({
   from: String,
   to: String,
   description: String,
-  amount: Number
+  amount: Number,
 });
 
-var Transaction = mongoose.model('Transaction', transactionSchema);
+const Transaction = mongoose.model('Transaction', transactionSchema);
+
 module.exports = Transaction;
