@@ -4,6 +4,28 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 
+// Log4JS
+const log4js = require('log4js');
+log4js.configure({
+  appenders: {
+    everything: {
+      type: 'file',
+      filename: 'datacloudians.log',
+      maxLogSize: 10485760,
+      backups: 2,
+      compress: true,
+    },
+  },
+  categories: {
+    default: {
+      appenders: ['everything'],
+      level: 'debug',
+    },
+  },
+});
+const logger = log4js.getLogger();
+
+
 // Connect-Mongo
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -40,7 +62,7 @@ const Transaction = require('./models/transaction.js');
 const User = require('./models/user.js');
 
 // MONGO LOGs
-db.on('error', console.error.bind(console, 'ERROR: [MongoDB: connection error] '));
+db.on('error', logger.debug.bind(logger, 'ERROR: [MongoDB: connection error] '));
 
 // ------ APIs DEFINITION -------
 app.use(session({
@@ -203,7 +225,7 @@ app.put('/user/:_id', function user(req, res) {
 
 app.listen(3001, function webApp(err) {
   if (err) {
-    return console.log(err);
+    return logger.debug(err);
   }
-  return console.log('API Server is listening on http://localhost:3001');
+  return logger.debug('API Server is listening on http://localhost:3001');
 });
