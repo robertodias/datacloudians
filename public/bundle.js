@@ -12626,8 +12626,6 @@ TabContent.childContextTypes = childContextTypes;
 "use strict";
 
 
-//IMPORT AXIOS
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -12645,58 +12643,57 @@ var _axios2 = _interopRequireDefault(_axios);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-//LOGIN ACTIONS
-
-//LOGIN WITH AN USER
+// LOGIN WITH AN USER
 function postLogin(user) {
-  return function (dispatch) {
-    _axios2.default.post("/api/login", user).then(function (response) {
-      dispatch({ type: "POST_LOGIN", user: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "POST_LOGIN_REJECTED", payload: "There was an error during the LOGIN." });
+  return function postLoginAction(dispatch) {
+    _axios2.default.post('/api/login', user).then(function postLoginSucess(response) {
+      dispatch({ type: 'POST_LOGIN', user: response.data });
+    }).catch(function postLoginError() {
+      dispatch({ type: 'POST_LOGIN_REJECTED', payload: 'There was an error during the LOGIN.' });
     });
   };
 }
 
-//RESET SAVE USERS FORM BUTTON
+// RESET SAVE USERS FORM BUTTON
+// IMPORT AXIOS
 function resetLoginButtonForm() {
-  return { type: "RESET_LOGIN_BUTTON" };
+  return { type: 'RESET_LOGIN_BUTTON' };
 }
 
 // LOAD USER FROM COOKIE
 function checkAuth() {
-  return function (dispatch) {
-    _axios2.default.get("/api/checkAuth").then(function (response) {
-      dispatch({ type: "POST_LOGIN", user: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "GET_CHECK_AUTH_ERROR", payload: null });
+  return function checkAuthAction(dispatch) {
+    _axios2.default.get('/api/checkAuth').then(function checkAuthSuccess(response) {
+      dispatch({ type: 'POST_LOGIN', user: response.data });
+    }).catch(function checkAuthError() {
+      dispatch({ type: 'GET_CHECK_AUTH_ERROR', payload: null });
     });
   };
 }
 
 // Previous URL stored for redirect after login
 function setRedirectUrl(url) {
-  return { type: "SET_REDIRECT_URL", url: url };
+  return { type: 'SET_REDIRECT_URL', url: url };
 }
 
 // Logout action
 function logout() {
-  return function (dispatch) {
-    _axios2.default.get("/api/logout").then(function (response) {
-      dispatch({ type: "GET_LOGOUT", user: null });
-    }).catch(function (err) {
-      dispatch({ type: "GET_LOGOUT_ERROR", payload: "Unable to logout." });
+  return function logoutAction(dispatch) {
+    _axios2.default.get('/api/logout').then(function logoutSuccess() {
+      dispatch({ type: 'GET_LOGOUT', user: null });
+    }).catch(function logouError() {
+      dispatch({ type: 'GET_LOGOUT_ERROR', payload: 'Unable to logout.' });
     });
   };
 }
 
 // Logout Modal Actions
 function openLogoutModal() {
-  return { type: "OPEN_LOGOUT_MODAL", showLogoutModal: true };
+  return { type: 'OPEN_LOGOUT_MODAL', showLogoutModal: true };
 }
 
 function closeLogoutModal() {
-  return { type: "CLOSE_LOGOUT_MODAL", showLogoutModal: false };
+  return { type: 'CLOSE_LOGOUT_MODAL', showLogoutModal: false };
 }
 
 /***/ }),
@@ -12812,8 +12809,6 @@ module.exports = defaults;
 "use strict";
 
 
-//IMPORT AXIOS
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -12828,44 +12823,43 @@ var _axios2 = _interopRequireDefault(_axios);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-//USERS ACTIONS
-
-//LOAD AN USER
+// LOAD AN USER
 function getUser() {
-  return function (dispatch) {
-    _axios2.default.get("/api/user").then(function (response) {
-      dispatch({ type: "GET_USER", payload: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "GET_USER_REJECTED", msg: 'Error when getting the USER.' });
+  return function getUserAction(dispatch) {
+    _axios2.default.get('/api/user').then(function getUserSuccess(response) {
+      dispatch({ type: 'GET_USER', payload: response.data });
+    }).catch(function getUserError() {
+      dispatch({ type: 'GET_USER_REJECTED', msg: 'Error when getting the USER.' });
     });
   };
 }
 
-//CREATE AN USER
+// CREATE AN USER
+// IMPORT AXIOS
 function postUser(user) {
-  return function (dispatch) {
-    _axios2.default.post("/api/user", user).then(function (response) {
-      dispatch({ type: "POST_USER", payload: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "POST_USER_REJECTED", payload: "There was an error creating a new USER." });
+  return function postUserAction(dispatch) {
+    _axios2.default.post('/api/user', user).then(function postUserSuccess(response) {
+      dispatch({ type: 'POST_USER', payload: response.data });
+    }).catch(function postUserError() {
+      dispatch({ type: 'POST_USER_REJECTED', payload: 'There was an error creating a new USER.' });
     });
   };
 }
 
-//DELETE AN USER
+// DELETE AN USER
 function deleteUser(id) {
-  return function (dispatch) {
-    _axios2.default.delete("/api/user/" + id).then(function (response) {
-      dispatch({ type: "DELETE_USER", payload: id });
-    }).catch(function (err) {
-      dispatch({ type: "DELETE_USER_REJECTED", payload: "There was an error while deleting an USER." });
+  return function deleteUserAction(dispatch) {
+    _axios2.default.delete('/api/user/' + id).then(function deleteUserSuccess() {
+      dispatch({ type: 'DELETE_USER', payload: id });
+    }).catch(function deleteUserError() {
+      dispatch({ type: 'DELETE_USER_REJECTED', payload: 'There was an error while deleting an USER.' });
     });
   };
 }
 
-//RESET SAVE USERS FORM BUTTON
+// RESET SAVE USERS FORM BUTTON
 function resetSaveButtonForm() {
-  return { type: "RESET_USER_BUTTON" };
+  return { type: 'RESET_USER_BUTTON' };
 }
 
 /***/ }),
@@ -54048,8 +54042,6 @@ exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(
 "use strict";
 
 
-//IMPORT AXIOS
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -54063,36 +54055,37 @@ var _axios2 = _interopRequireDefault(_axios);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-//USERS ACTIONS
+// USERS ACTIONS
 
-//LOAD AN TRANSACTION
+// LOAD AN TRANSACTION
 function getTransaction() {
-  return function (dispatch) {
-    _axios2.default.get("/api/transaction").then(function (response) {
-      dispatch({ type: "GET_TRANSACTION", payload: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "GET_TRANSACTION_REJECTED", msg: 'Error when getting the TRANSACTION.' });
+  return function getTransactionAction(dispatch) {
+    _axios2.default.get('/api/transaction').then(function getTransactionSuccess(response) {
+      dispatch({ type: 'GET_TRANSACTION', payload: response.data });
+    }).catch(function getTransationError() {
+      dispatch({ type: 'GET_TRANSACTION_REJECTED', msg: 'Error when getting the TRANSACTION.' });
     });
   };
 }
 
-//CREATE AN TRANSACTION
+// CREATE AN TRANSACTION
+// IMPORT AXIOS
 function postTransaction(transaction) {
-  return function (dispatch) {
-    _axios2.default.post("/api/transaction", transaction).then(function (response) {
+  return function postTransactionAction(dispatch) {
+    _axios2.default.post('/api/transaction', transaction).then(function postTransactionSuccess(response) {
       if (response.data.error) {
         throw new Error(response.data.error);
-      };
-      dispatch({ type: "POST_TRANSACTION", payload: response.data });
-    }).catch(function (err) {
-      dispatch({ type: "POST_TRANSACTION_REJECTED", payload: "There was an error creating a new TRANSACTION." });
+      }
+      dispatch({ type: 'POST_TRANSACTION', payload: response.data });
+    }).catch(function postTransactionError() {
+      dispatch({ type: 'POST_TRANSACTION_REJECTED', payload: 'There was an error creating a new TRANSACTION.' });
     });
   };
 }
 
-//RESET SAVE USERS FORM BUTTON
+// RESET SAVE USERS FORM BUTTON
 function resetSaveButtonForm() {
-  return { type: "RESET_TRANSACTION_BUTTON" };
+  return { type: 'RESET_TRANSACTION_BUTTON' };
 }
 
 /***/ }),
