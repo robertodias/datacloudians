@@ -38841,7 +38841,7 @@ var Menu = function (_React$Component) {
       if (this.props.user) {
         return _react2.default.createElement(
           _reactBootstrap.Navbar,
-          { fixedTop: true },
+          { fixedTop: true, collapseOnSelect: true },
           _react2.default.createElement(
             _reactBootstrap.Navbar.Header,
             null,
@@ -38919,7 +38919,7 @@ var Menu = function (_React$Component) {
 
       return _react2.default.createElement(
         _reactBootstrap.Navbar,
-        { fixedTop: true },
+        { fixedTop: true, collapseOnSelect: true },
         _react2.default.createElement(
           _reactBootstrap.Navbar.Header,
           null,
