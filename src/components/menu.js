@@ -11,7 +11,7 @@ class Menu extends React.Component {
   render() {
     if (this.props.user) {
       return (
-        <Navbar fixedTop>
+        <Navbar fixedTop collapseOnSelect>
           <Navbar.Header>
             <Navbar.Brand>
               DC$ <span className="beta">beta</span>
@@ -45,7 +45,7 @@ class Menu extends React.Component {
     }
 
     return (
-      <Navbar fixedTop>
+      <Navbar fixedTop collapseOnSelect>
         <Navbar.Header>
           <Navbar.Brand>
               DC$ <span className="beta">beta</span>
