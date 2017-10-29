@@ -23,7 +23,7 @@ class TeamInfo extends React.Component {
   render() {
     const userList = this.props.user.map(function teamInfo(userArr) {
       return (
-        <Col xs={12} sm={6} md={4} key={userArr._id}>
+        <Col sm={6} smOffset={3} key={userArr._id}>
           <User
             _id={userArr._id}
             name={userArr.name}
@@ -35,7 +35,7 @@ class TeamInfo extends React.Component {
 
     return (
       <Grid>
-        <Row style={{marginTop: '15px'}}>
+        <Row>
           {userList}
         </Row>
       </Grid>

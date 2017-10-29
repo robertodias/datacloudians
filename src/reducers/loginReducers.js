@@ -17,7 +17,7 @@ export function loginReducers(state = initialState, action) {
   case 'POST_LOGIN_REJECTED':
     return {
       ...state,
-      msg: 'Invalid Email or Password!',
+      msg: 'Not Authorized',
       style: 'danger',
       validation: 'error',
     };

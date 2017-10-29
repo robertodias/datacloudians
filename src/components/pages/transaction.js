@@ -1,6 +1,6 @@
 // IMPORT REACT
 import React from 'react';
-import {Col, Row, Well, Panel, FormControl, FormGroup, ControlLabel, Button} from 'react-bootstrap';
+import {Col, Well, Panel, FormControl, FormGroup, ControlLabel, Button} from 'react-bootstrap';
 import {findDOMNode} from 'react-dom';
 import {connect} from 'react-redux';
 
@@ -27,51 +27,49 @@ class Transaction extends React.Component {
     });
 
     return (
-      <Well>
-        <Row>
-          <Col>
-            <Panel style={{marginTop: '10px'}}>
-              <FormGroup controlId="formControlsSelectFrom">
-                <ControlLabel>Select your User</ControlLabel>
-                <FormControl ref="from" componentClass="select" placeholder="select">
-                  <option value="select">select</option>
-                  {userList}
-                </FormControl>
-              </FormGroup>
-              <FormGroup controlId="formControlsSelectTo">
-                <ControlLabel>Select the user that will receive DC$</ControlLabel>
-                <FormControl ref="to" componentClass="select" placeholder="select">
-                  <option value="select">select</option>
-                  {userList}
-                </FormControl>
-              </FormGroup>
-              <FormGroup controlId="description" validationState={this.props.validation}>
-                <ControlLabel>Description</ControlLabel>
-                <FormControl
-                  type="text"
-                  placeholder="Enter a Description..."
-                  ref="description"
-                />
-                <FormControl.Feedback/>
-              </FormGroup>
-              <FormGroup controlId="amount" validationState={this.props.validation}>
-                <ControlLabel>Amount DC$</ControlLabel>
-                <FormControl
-                  type="text"
-                  placeholder="Enter an Amount..."
-                  ref="amount"
-                />
-                <FormControl.Feedback/>
-              </FormGroup>
-              <Button
-                onClick={(!this.props.msg) ? (this.handleSubmit.bind(this)) : (this.resetForm.bind(this))}
-                bsStyle={(!this.props.style) ? ('primary') : (this.props.style)}>
-                {(!this.props.msg) ? ('Confirm') : (this.props.msg)}
-              </Button>
-            </Panel>
-          </Col>
-        </Row>
-      </Well>
+      <Col sm={6} smOffset={3}>
+        <Well>
+          <Panel style={{marginTop: '10px'}}>
+            <FormGroup controlId="formControlsSelectFrom">
+              <ControlLabel>Select your User</ControlLabel>
+              <FormControl ref="from" componentClass="select" placeholder="select">
+                <option value="select">select</option>
+                {userList}
+              </FormControl>
+            </FormGroup>
+            <FormGroup controlId="formControlsSelectTo">
+              <ControlLabel>Select the user that will receive DC$</ControlLabel>
+              <FormControl ref="to" componentClass="select" placeholder="select">
+                <option value="select">select</option>
+                {userList}
+              </FormControl>
+            </FormGroup>
+            <FormGroup controlId="description" validationState={this.props.validation}>
+              <ControlLabel>Description</ControlLabel>
+              <FormControl
+                type="text"
+                placeholder="Enter a Description..."
+                ref="description"
+              />
+              <FormControl.Feedback/>
+            </FormGroup>
+            <FormGroup controlId="amount" validationState={this.props.validation}>
+              <ControlLabel>Amount DC$</ControlLabel>
+              <FormControl
+                type="text"
+                placeholder="Enter an Amount..."
+                ref="amount"
+              />
+              <FormControl.Feedback/>
+            </FormGroup>
+            <Button
+              onClick={(!this.props.msg) ? (this.handleSubmit.bind(this)) : (this.resetForm.bind(this))}
+              bsStyle={(!this.props.style) ? ('primary') : (this.props.style)}>
+              {(!this.props.msg) ? ('Confirm') : (this.props.msg)}
+            </Button>
+          </Panel>
+        </Well>
+      </Col>
     );
   }
 

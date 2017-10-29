@@ -30,39 +30,37 @@ class Login extends React.Component {
 
   render() {
     return (
-      <Col sm={12}>
-        <Col sm={6} smOffset={3}>
-          <Well>
-            <Form horizontal>
-              <FormGroup controlId="email" validationState={this.props.validation}>
-                <Col componentClass={ControlLabel} sm={2}>
-                  Email
-                </Col>
-                <Col sm={8}>
-                  <FormControl ref="emailValue" type="email" placeholder="Email" />
-                </Col>
-              </FormGroup>
+      <Col sm={6} smOffset={3}>
+        <Well>
+          <Form horizontal>
+            <FormGroup controlId="email" validationState={this.props.validation}>
+              <Col componentClass={ControlLabel} sm={2}>
+                Email
+              </Col>
+              <Col sm={8}>
+                <FormControl ref="emailValue" type="email" placeholder="Email" />
+              </Col>
+            </FormGroup>
 
-              <FormGroup controlId="password" validationState={this.props.validation}>
-                <Col componentClass={ControlLabel} sm={2}>
-                  Password
-                </Col>
-                <Col sm={8}>
-                  <FormControl ref="passValue" type="password" placeholder="Password" />
-                </Col>
-              </FormGroup>
-              <FormGroup>
-                <Col smOffset={2} sm={8}>
-                  <Button
-                    onClick={(!this.props.msg) ? (this.handleSubmit.bind(this)) : (this.resetForm.bind(this))}
-                    bsStyle={(!this.props.style) ? ('primary') : (this.props.style)}>
-                    {(!this.props.msg) ? ('Sign in') : (this.props.msg)}
-                  </Button>
-                </Col>
-              </FormGroup>
-            </Form>
-          </Well>
-        </Col>
+            <FormGroup controlId="password" validationState={this.props.validation}>
+              <Col componentClass={ControlLabel} sm={2}>
+                Password
+              </Col>
+              <Col sm={8}>
+                <FormControl ref="passValue" type="password" placeholder="Password" />
+              </Col>
+            </FormGroup>
+            <FormGroup>
+              <Col smOffset={2} sm={8}>
+                <Button
+                  onClick={(!this.props.msg) ? (this.handleSubmit.bind(this)) : (this.resetForm.bind(this))}
+                  bsStyle={(!this.props.style) ? ('primary') : (this.props.style)}>
+                  {(!this.props.msg) ? ('Sign in') : (this.props.msg)}
+                </Button>
+              </Col>
+            </FormGroup>
+          </Form>
+        </Well>
       </Col>
     );
   }

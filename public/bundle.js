@@ -1037,7 +1037,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 var _prodInvariant = __webpack_require__(12);
 
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var ReactDOMComponentFlags = __webpack_require__(164);
 
 var invariant = __webpack_require__(10);
@@ -3227,435 +3227,6 @@ module.exports = factory(
 
 /***/ }),
 /* 35 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/**
- * Copyright 2013-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- */
-
-
-
-var _prodInvariant = __webpack_require__(12);
-
-var invariant = __webpack_require__(10);
-
-function checkMask(value, bitmask) {
-  return (value & bitmask) === bitmask;
-}
-
-var DOMPropertyInjection = {
-  /**
-   * Mapping from normalized, camelcased property names to a configuration that
-   * specifies how the associated DOM property should be accessed or rendered.
-   */
-  MUST_USE_PROPERTY: 0x1,
-  HAS_BOOLEAN_VALUE: 0x4,
-  HAS_NUMERIC_VALUE: 0x8,
-  HAS_POSITIVE_NUMERIC_VALUE: 0x10 | 0x8,
-  HAS_OVERLOADED_BOOLEAN_VALUE: 0x20,
-
-  /**
-   * Inject some specialized knowledge about the DOM. This takes a config object
-   * with the following properties:
-   *
-   * isCustomAttribute: function that given an attribute name will return true
-   * if it can be inserted into the DOM verbatim. Useful for data-* or aria-*
-   * attributes where it's impossible to enumerate all of the possible
-   * attribute names,
-   *
-   * Properties: object mapping DOM property name to one of the
-   * DOMPropertyInjection constants or null. If your attribute isn't in here,
-   * it won't get written to the DOM.
-   *
-   * DOMAttributeNames: object mapping React attribute name to the DOM
-   * attribute name. Attribute names not specified use the **lowercase**
-   * normalized name.
-   *
-   * DOMAttributeNamespaces: object mapping React attribute name to the DOM
-   * attribute namespace URL. (Attribute names not specified use no namespace.)
-   *
-   * DOMPropertyNames: similar to DOMAttributeNames but for DOM properties.
-   * Property names not specified use the normalized name.
-   *
-   * DOMMutationMethods: Properties that require special mutation methods. If
-   * `value` is undefined, the mutation method should unset the property.
-   *
-   * @param {object} domPropertyConfig the config as described above.
-   */
-  injectDOMPropertyConfig: function (domPropertyConfig) {
-    var Injection = DOMPropertyInjection;
-    var Properties = domPropertyConfig.Properties || {};
-    var DOMAttributeNamespaces = domPropertyConfig.DOMAttributeNamespaces || {};
-    var DOMAttributeNames = domPropertyConfig.DOMAttributeNames || {};
-    var DOMPropertyNames = domPropertyConfig.DOMPropertyNames || {};
-    var DOMMutationMethods = domPropertyConfig.DOMMutationMethods || {};
-
-    if (domPropertyConfig.isCustomAttribute) {
-      DOMProperty._isCustomAttributeFunctions.push(domPropertyConfig.isCustomAttribute);
-    }
-
-    for (var propName in Properties) {
-      !!DOMProperty.properties.hasOwnProperty(propName) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'injectDOMPropertyConfig(...): You\'re trying to inject DOM property \'%s\' which has already been injected. You may be accidentally injecting the same DOM property config twice, or you may be injecting two configs that have conflicting property names.', propName) : _prodInvariant('48', propName) : void 0;
-
-      var lowerCased = propName.toLowerCase();
-      var propConfig = Properties[propName];
-
-      var propertyInfo = {
-        attributeName: lowerCased,
-        attributeNamespace: null,
-        propertyName: propName,
-        mutationMethod: null,
-
-        mustUseProperty: checkMask(propConfig, Injection.MUST_USE_PROPERTY),
-        hasBooleanValue: checkMask(propConfig, Injection.HAS_BOOLEAN_VALUE),
-        hasNumericValue: checkMask(propConfig, Injection.HAS_NUMERIC_VALUE),
-        hasPositiveNumericValue: checkMask(propConfig, Injection.HAS_POSITIVE_NUMERIC_VALUE),
-        hasOverloadedBooleanValue: checkMask(propConfig, Injection.HAS_OVERLOADED_BOOLEAN_VALUE)
-      };
-      !(propertyInfo.hasBooleanValue + propertyInfo.hasNumericValue + propertyInfo.hasOverloadedBooleanValue <= 1) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'DOMProperty: Value can be one of boolean, overloaded boolean, or numeric value, but not a combination: %s', propName) : _prodInvariant('50', propName) : void 0;
-
-      if (process.env.NODE_ENV !== 'production') {
-        DOMProperty.getPossibleStandardName[lowerCased] = propName;
-      }
-
-      if (DOMAttributeNames.hasOwnProperty(propName)) {
-        var attributeName = DOMAttributeNames[propName];
-        propertyInfo.attributeName = attributeName;
-        if (process.env.NODE_ENV !== 'production') {
-          DOMProperty.getPossibleStandardName[attributeName] = propName;
-        }
-      }
-
-      if (DOMAttributeNamespaces.hasOwnProperty(propName)) {
-        propertyInfo.attributeNamespace = DOMAttributeNamespaces[propName];
-      }
-
-      if (DOMPropertyNames.hasOwnProperty(propName)) {
-        propertyInfo.propertyName = DOMPropertyNames[propName];
-      }
-
-      if (DOMMutationMethods.hasOwnProperty(propName)) {
-        propertyInfo.mutationMethod = DOMMutationMethods[propName];
-      }
-
-      DOMProperty.properties[propName] = propertyInfo;
-    }
-  }
-};
-
-/* eslint-disable max-len */
-var ATTRIBUTE_NAME_START_CHAR = ':A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD';
-/* eslint-enable max-len */
-
-/**
- * DOMProperty exports lookup objects that can be used like functions:
- *
- *   > DOMProperty.isValid['id']
- *   true
- *   > DOMProperty.isValid['foobar']
- *   undefined
- *
- * Although this may be confusing, it performs better in general.
- *
- * @see http://jsperf.com/key-exists
- * @see http://jsperf.com/key-missing
- */
-var DOMProperty = {
-  ID_ATTRIBUTE_NAME: 'data-reactid',
-  ROOT_ATTRIBUTE_NAME: 'data-reactroot',
-
-  ATTRIBUTE_NAME_START_CHAR: ATTRIBUTE_NAME_START_CHAR,
-  ATTRIBUTE_NAME_CHAR: ATTRIBUTE_NAME_START_CHAR + '\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040',
-
-  /**
-   * Map from property "standard name" to an object with info about how to set
-   * the property in the DOM. Each object contains:
-   *
-   * attributeName:
-   *   Used when rendering markup or with `*Attribute()`.
-   * attributeNamespace
-   * propertyName:
-   *   Used on DOM node instances. (This includes properties that mutate due to
-   *   external factors.)
-   * mutationMethod:
-   *   If non-null, used instead of the property or `setAttribute()` after
-   *   initial render.
-   * mustUseProperty:
-   *   Whether the property must be accessed and mutated as an object property.
-   * hasBooleanValue:
-   *   Whether the property should be removed when set to a falsey value.
-   * hasNumericValue:
-   *   Whether the property must be numeric or parse as a numeric and should be
-   *   removed when set to a falsey value.
-   * hasPositiveNumericValue:
-   *   Whether the property must be positive numeric or parse as a positive
-   *   numeric and should be removed when set to a falsey value.
-   * hasOverloadedBooleanValue:
-   *   Whether the property can be used as a flag as well as with a value.
-   *   Removed when strictly equal to false; present without a value when
-   *   strictly equal to true; present with a value otherwise.
-   */
-  properties: {},
-
-  /**
-   * Mapping from lowercase property names to the properly cased version, used
-   * to warn in the case of missing properties. Available only in __DEV__.
-   *
-   * autofocus is predefined, because adding it to the property whitelist
-   * causes unintended side effects.
-   *
-   * @type {Object}
-   */
-  getPossibleStandardName: process.env.NODE_ENV !== 'production' ? { autofocus: 'autoFocus' } : null,
-
-  /**
-   * All of the isCustomAttribute() functions that have been injected.
-   */
-  _isCustomAttributeFunctions: [],
-
-  /**
-   * Checks whether a property name is a custom attribute.
-   * @method
-   */
-  isCustomAttribute: function (attributeName) {
-    for (var i = 0; i < DOMProperty._isCustomAttributeFunctions.length; i++) {
-      var isCustomAttributeFn = DOMProperty._isCustomAttributeFunctions[i];
-      if (isCustomAttributeFn(attributeName)) {
-        return true;
-      }
-    }
-    return false;
-  },
-
-  injection: DOMPropertyInjection
-};
-
-module.exports = DOMProperty;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-/* 36 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Provider__ = __webpack_require__(361);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__ = __webpack_require__(190);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__connect_connect__ = __webpack_require__(365);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Provider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "createProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "connectAdvanced", function() { return __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "connect", function() { return __WEBPACK_IMPORTED_MODULE_2__connect_connect__["a"]; });
-
-
-
-
-
-
-/***/ }),
-/* 37 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["c"] = isReactChildren;
-/* harmony export (immutable) */ __webpack_exports__["a"] = createRouteFromReactElement;
-/* unused harmony export createRoutesFromReactChildren */
-/* harmony export (immutable) */ __webpack_exports__["b"] = createRoutes;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-
-
-function isValidChild(object) {
-  return object == null || __WEBPACK_IMPORTED_MODULE_0_react___default.a.isValidElement(object);
-}
-
-function isReactChildren(object) {
-  return isValidChild(object) || Array.isArray(object) && object.every(isValidChild);
-}
-
-function createRoute(defaultProps, props) {
-  return _extends({}, defaultProps, props);
-}
-
-function createRouteFromReactElement(element) {
-  var type = element.type;
-  var route = createRoute(type.defaultProps, element.props);
-
-  if (route.children) {
-    var childRoutes = createRoutesFromReactChildren(route.children, route);
-
-    if (childRoutes.length) route.childRoutes = childRoutes;
-
-    delete route.children;
-  }
-
-  return route;
-}
-
-/**
- * Creates and returns a routes object from the given ReactChildren. JSX
- * provides a convenient way to visualize how routes in the hierarchy are
- * nested.
- *
- *   import { Route, createRoutesFromReactChildren } from 'react-router'
- *
- *   const routes = createRoutesFromReactChildren(
- *     <Route component={App}>
- *       <Route path="home" component={Dashboard}/>
- *       <Route path="news" component={NewsFeed}/>
- *     </Route>
- *   )
- *
- * Note: This method is automatically used when you provide <Route> children
- * to a <Router> component.
- */
-function createRoutesFromReactChildren(children, parentRoute) {
-  var routes = [];
-
-  __WEBPACK_IMPORTED_MODULE_0_react___default.a.Children.forEach(children, function (element) {
-    if (__WEBPACK_IMPORTED_MODULE_0_react___default.a.isValidElement(element)) {
-      // Component classes may have a static create* method.
-      if (element.type.createRouteFromReactElement) {
-        var route = element.type.createRouteFromReactElement(element, parentRoute);
-
-        if (route) routes.push(route);
-      } else {
-        routes.push(createRouteFromReactElement(element));
-      }
-    }
-  });
-
-  return routes;
-}
-
-/**
- * Creates and returns an array of routes from the given object which
- * may be a JSX route, a plain object route, or an array of either.
- */
-function createRoutes(routes) {
-  if (isReactChildren(routes)) {
-    routes = createRoutesFromReactChildren(routes);
-  } else if (routes && !Array.isArray(routes)) {
-    routes = [routes];
-  }
-
-  return routes;
-}
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
-
-exports.__esModule = true;
-exports.createPath = exports.parsePath = exports.getQueryStringValueFromPath = exports.stripQueryStringValueFromPath = exports.addQueryStringValueToPath = undefined;
-
-var _warning = __webpack_require__(17);
-
-var _warning2 = _interopRequireDefault(_warning);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var addQueryStringValueToPath = exports.addQueryStringValueToPath = function addQueryStringValueToPath(path, key, value) {
-  var _parsePath = parsePath(path),
-      pathname = _parsePath.pathname,
-      search = _parsePath.search,
-      hash = _parsePath.hash;
-
-  return createPath({
-    pathname: pathname,
-    search: search + (search.indexOf('?') === -1 ? '?' : '&') + key + '=' + value,
-    hash: hash
-  });
-};
-
-var stripQueryStringValueFromPath = exports.stripQueryStringValueFromPath = function stripQueryStringValueFromPath(path, key) {
-  var _parsePath2 = parsePath(path),
-      pathname = _parsePath2.pathname,
-      search = _parsePath2.search,
-      hash = _parsePath2.hash;
-
-  return createPath({
-    pathname: pathname,
-    search: search.replace(new RegExp('([?&])' + key + '=[a-zA-Z0-9]+(&?)'), function (match, prefix, suffix) {
-      return prefix === '?' ? prefix : suffix;
-    }),
-    hash: hash
-  });
-};
-
-var getQueryStringValueFromPath = exports.getQueryStringValueFromPath = function getQueryStringValueFromPath(path, key) {
-  var _parsePath3 = parsePath(path),
-      search = _parsePath3.search;
-
-  var match = search.match(new RegExp('[?&]' + key + '=([a-zA-Z0-9]+)'));
-  return match && match[1];
-};
-
-var extractPath = function extractPath(string) {
-  var match = string.match(/^(https?:)?\/\/[^\/]*/);
-  return match == null ? string : string.substring(match[0].length);
-};
-
-var parsePath = exports.parsePath = function parsePath(path) {
-  var pathname = extractPath(path);
-  var search = '';
-  var hash = '';
-
-  process.env.NODE_ENV !== 'production' ? (0, _warning2.default)(path === pathname, 'A path must be pathname + search + hash only, not a full URL like "%s"', path) : void 0;
-
-  var hashIndex = pathname.indexOf('#');
-  if (hashIndex !== -1) {
-    hash = pathname.substring(hashIndex);
-    pathname = pathname.substring(0, hashIndex);
-  }
-
-  var searchIndex = pathname.indexOf('?');
-  if (searchIndex !== -1) {
-    search = pathname.substring(searchIndex);
-    pathname = pathname.substring(0, searchIndex);
-  }
-
-  if (pathname === '') pathname = '/';
-
-  return {
-    pathname: pathname,
-    search: search,
-    hash: hash
-  };
-};
-
-var createPath = exports.createPath = function createPath(location) {
-  if (location == null || typeof location === 'string') return location;
-
-  var basename = location.basename,
-      pathname = location.pathname,
-      search = location.search,
-      hash = location.hash;
-
-  var path = (basename || '') + pathname;
-
-  if (search && search !== '?') path += search;
-
-  if (hash) path += hash;
-
-  return path;
-};
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3944,6 +3515,435 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {/**
+ * Copyright 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
+
+
+
+var _prodInvariant = __webpack_require__(12);
+
+var invariant = __webpack_require__(10);
+
+function checkMask(value, bitmask) {
+  return (value & bitmask) === bitmask;
+}
+
+var DOMPropertyInjection = {
+  /**
+   * Mapping from normalized, camelcased property names to a configuration that
+   * specifies how the associated DOM property should be accessed or rendered.
+   */
+  MUST_USE_PROPERTY: 0x1,
+  HAS_BOOLEAN_VALUE: 0x4,
+  HAS_NUMERIC_VALUE: 0x8,
+  HAS_POSITIVE_NUMERIC_VALUE: 0x10 | 0x8,
+  HAS_OVERLOADED_BOOLEAN_VALUE: 0x20,
+
+  /**
+   * Inject some specialized knowledge about the DOM. This takes a config object
+   * with the following properties:
+   *
+   * isCustomAttribute: function that given an attribute name will return true
+   * if it can be inserted into the DOM verbatim. Useful for data-* or aria-*
+   * attributes where it's impossible to enumerate all of the possible
+   * attribute names,
+   *
+   * Properties: object mapping DOM property name to one of the
+   * DOMPropertyInjection constants or null. If your attribute isn't in here,
+   * it won't get written to the DOM.
+   *
+   * DOMAttributeNames: object mapping React attribute name to the DOM
+   * attribute name. Attribute names not specified use the **lowercase**
+   * normalized name.
+   *
+   * DOMAttributeNamespaces: object mapping React attribute name to the DOM
+   * attribute namespace URL. (Attribute names not specified use no namespace.)
+   *
+   * DOMPropertyNames: similar to DOMAttributeNames but for DOM properties.
+   * Property names not specified use the normalized name.
+   *
+   * DOMMutationMethods: Properties that require special mutation methods. If
+   * `value` is undefined, the mutation method should unset the property.
+   *
+   * @param {object} domPropertyConfig the config as described above.
+   */
+  injectDOMPropertyConfig: function (domPropertyConfig) {
+    var Injection = DOMPropertyInjection;
+    var Properties = domPropertyConfig.Properties || {};
+    var DOMAttributeNamespaces = domPropertyConfig.DOMAttributeNamespaces || {};
+    var DOMAttributeNames = domPropertyConfig.DOMAttributeNames || {};
+    var DOMPropertyNames = domPropertyConfig.DOMPropertyNames || {};
+    var DOMMutationMethods = domPropertyConfig.DOMMutationMethods || {};
+
+    if (domPropertyConfig.isCustomAttribute) {
+      DOMProperty._isCustomAttributeFunctions.push(domPropertyConfig.isCustomAttribute);
+    }
+
+    for (var propName in Properties) {
+      !!DOMProperty.properties.hasOwnProperty(propName) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'injectDOMPropertyConfig(...): You\'re trying to inject DOM property \'%s\' which has already been injected. You may be accidentally injecting the same DOM property config twice, or you may be injecting two configs that have conflicting property names.', propName) : _prodInvariant('48', propName) : void 0;
+
+      var lowerCased = propName.toLowerCase();
+      var propConfig = Properties[propName];
+
+      var propertyInfo = {
+        attributeName: lowerCased,
+        attributeNamespace: null,
+        propertyName: propName,
+        mutationMethod: null,
+
+        mustUseProperty: checkMask(propConfig, Injection.MUST_USE_PROPERTY),
+        hasBooleanValue: checkMask(propConfig, Injection.HAS_BOOLEAN_VALUE),
+        hasNumericValue: checkMask(propConfig, Injection.HAS_NUMERIC_VALUE),
+        hasPositiveNumericValue: checkMask(propConfig, Injection.HAS_POSITIVE_NUMERIC_VALUE),
+        hasOverloadedBooleanValue: checkMask(propConfig, Injection.HAS_OVERLOADED_BOOLEAN_VALUE)
+      };
+      !(propertyInfo.hasBooleanValue + propertyInfo.hasNumericValue + propertyInfo.hasOverloadedBooleanValue <= 1) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'DOMProperty: Value can be one of boolean, overloaded boolean, or numeric value, but not a combination: %s', propName) : _prodInvariant('50', propName) : void 0;
+
+      if (process.env.NODE_ENV !== 'production') {
+        DOMProperty.getPossibleStandardName[lowerCased] = propName;
+      }
+
+      if (DOMAttributeNames.hasOwnProperty(propName)) {
+        var attributeName = DOMAttributeNames[propName];
+        propertyInfo.attributeName = attributeName;
+        if (process.env.NODE_ENV !== 'production') {
+          DOMProperty.getPossibleStandardName[attributeName] = propName;
+        }
+      }
+
+      if (DOMAttributeNamespaces.hasOwnProperty(propName)) {
+        propertyInfo.attributeNamespace = DOMAttributeNamespaces[propName];
+      }
+
+      if (DOMPropertyNames.hasOwnProperty(propName)) {
+        propertyInfo.propertyName = DOMPropertyNames[propName];
+      }
+
+      if (DOMMutationMethods.hasOwnProperty(propName)) {
+        propertyInfo.mutationMethod = DOMMutationMethods[propName];
+      }
+
+      DOMProperty.properties[propName] = propertyInfo;
+    }
+  }
+};
+
+/* eslint-disable max-len */
+var ATTRIBUTE_NAME_START_CHAR = ':A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD';
+/* eslint-enable max-len */
+
+/**
+ * DOMProperty exports lookup objects that can be used like functions:
+ *
+ *   > DOMProperty.isValid['id']
+ *   true
+ *   > DOMProperty.isValid['foobar']
+ *   undefined
+ *
+ * Although this may be confusing, it performs better in general.
+ *
+ * @see http://jsperf.com/key-exists
+ * @see http://jsperf.com/key-missing
+ */
+var DOMProperty = {
+  ID_ATTRIBUTE_NAME: 'data-reactid',
+  ROOT_ATTRIBUTE_NAME: 'data-reactroot',
+
+  ATTRIBUTE_NAME_START_CHAR: ATTRIBUTE_NAME_START_CHAR,
+  ATTRIBUTE_NAME_CHAR: ATTRIBUTE_NAME_START_CHAR + '\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040',
+
+  /**
+   * Map from property "standard name" to an object with info about how to set
+   * the property in the DOM. Each object contains:
+   *
+   * attributeName:
+   *   Used when rendering markup or with `*Attribute()`.
+   * attributeNamespace
+   * propertyName:
+   *   Used on DOM node instances. (This includes properties that mutate due to
+   *   external factors.)
+   * mutationMethod:
+   *   If non-null, used instead of the property or `setAttribute()` after
+   *   initial render.
+   * mustUseProperty:
+   *   Whether the property must be accessed and mutated as an object property.
+   * hasBooleanValue:
+   *   Whether the property should be removed when set to a falsey value.
+   * hasNumericValue:
+   *   Whether the property must be numeric or parse as a numeric and should be
+   *   removed when set to a falsey value.
+   * hasPositiveNumericValue:
+   *   Whether the property must be positive numeric or parse as a positive
+   *   numeric and should be removed when set to a falsey value.
+   * hasOverloadedBooleanValue:
+   *   Whether the property can be used as a flag as well as with a value.
+   *   Removed when strictly equal to false; present without a value when
+   *   strictly equal to true; present with a value otherwise.
+   */
+  properties: {},
+
+  /**
+   * Mapping from lowercase property names to the properly cased version, used
+   * to warn in the case of missing properties. Available only in __DEV__.
+   *
+   * autofocus is predefined, because adding it to the property whitelist
+   * causes unintended side effects.
+   *
+   * @type {Object}
+   */
+  getPossibleStandardName: process.env.NODE_ENV !== 'production' ? { autofocus: 'autoFocus' } : null,
+
+  /**
+   * All of the isCustomAttribute() functions that have been injected.
+   */
+  _isCustomAttributeFunctions: [],
+
+  /**
+   * Checks whether a property name is a custom attribute.
+   * @method
+   */
+  isCustomAttribute: function (attributeName) {
+    for (var i = 0; i < DOMProperty._isCustomAttributeFunctions.length; i++) {
+      var isCustomAttributeFn = DOMProperty._isCustomAttributeFunctions[i];
+      if (isCustomAttributeFn(attributeName)) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  injection: DOMPropertyInjection
+};
+
+module.exports = DOMProperty;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ }),
+/* 37 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Provider__ = __webpack_require__(361);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__ = __webpack_require__(190);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__connect_connect__ = __webpack_require__(365);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Provider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "createProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "connectAdvanced", function() { return __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "connect", function() { return __WEBPACK_IMPORTED_MODULE_2__connect_connect__["a"]; });
+
+
+
+
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["c"] = isReactChildren;
+/* harmony export (immutable) */ __webpack_exports__["a"] = createRouteFromReactElement;
+/* unused harmony export createRoutesFromReactChildren */
+/* harmony export (immutable) */ __webpack_exports__["b"] = createRoutes;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+
+
+function isValidChild(object) {
+  return object == null || __WEBPACK_IMPORTED_MODULE_0_react___default.a.isValidElement(object);
+}
+
+function isReactChildren(object) {
+  return isValidChild(object) || Array.isArray(object) && object.every(isValidChild);
+}
+
+function createRoute(defaultProps, props) {
+  return _extends({}, defaultProps, props);
+}
+
+function createRouteFromReactElement(element) {
+  var type = element.type;
+  var route = createRoute(type.defaultProps, element.props);
+
+  if (route.children) {
+    var childRoutes = createRoutesFromReactChildren(route.children, route);
+
+    if (childRoutes.length) route.childRoutes = childRoutes;
+
+    delete route.children;
+  }
+
+  return route;
+}
+
+/**
+ * Creates and returns a routes object from the given ReactChildren. JSX
+ * provides a convenient way to visualize how routes in the hierarchy are
+ * nested.
+ *
+ *   import { Route, createRoutesFromReactChildren } from 'react-router'
+ *
+ *   const routes = createRoutesFromReactChildren(
+ *     <Route component={App}>
+ *       <Route path="home" component={Dashboard}/>
+ *       <Route path="news" component={NewsFeed}/>
+ *     </Route>
+ *   )
+ *
+ * Note: This method is automatically used when you provide <Route> children
+ * to a <Router> component.
+ */
+function createRoutesFromReactChildren(children, parentRoute) {
+  var routes = [];
+
+  __WEBPACK_IMPORTED_MODULE_0_react___default.a.Children.forEach(children, function (element) {
+    if (__WEBPACK_IMPORTED_MODULE_0_react___default.a.isValidElement(element)) {
+      // Component classes may have a static create* method.
+      if (element.type.createRouteFromReactElement) {
+        var route = element.type.createRouteFromReactElement(element, parentRoute);
+
+        if (route) routes.push(route);
+      } else {
+        routes.push(createRouteFromReactElement(element));
+      }
+    }
+  });
+
+  return routes;
+}
+
+/**
+ * Creates and returns an array of routes from the given object which
+ * may be a JSX route, a plain object route, or an array of either.
+ */
+function createRoutes(routes) {
+  if (isReactChildren(routes)) {
+    routes = createRoutesFromReactChildren(routes);
+  } else if (routes && !Array.isArray(routes)) {
+    routes = [routes];
+  }
+
+  return routes;
+}
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+exports.__esModule = true;
+exports.createPath = exports.parsePath = exports.getQueryStringValueFromPath = exports.stripQueryStringValueFromPath = exports.addQueryStringValueToPath = undefined;
+
+var _warning = __webpack_require__(17);
+
+var _warning2 = _interopRequireDefault(_warning);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var addQueryStringValueToPath = exports.addQueryStringValueToPath = function addQueryStringValueToPath(path, key, value) {
+  var _parsePath = parsePath(path),
+      pathname = _parsePath.pathname,
+      search = _parsePath.search,
+      hash = _parsePath.hash;
+
+  return createPath({
+    pathname: pathname,
+    search: search + (search.indexOf('?') === -1 ? '?' : '&') + key + '=' + value,
+    hash: hash
+  });
+};
+
+var stripQueryStringValueFromPath = exports.stripQueryStringValueFromPath = function stripQueryStringValueFromPath(path, key) {
+  var _parsePath2 = parsePath(path),
+      pathname = _parsePath2.pathname,
+      search = _parsePath2.search,
+      hash = _parsePath2.hash;
+
+  return createPath({
+    pathname: pathname,
+    search: search.replace(new RegExp('([?&])' + key + '=[a-zA-Z0-9]+(&?)'), function (match, prefix, suffix) {
+      return prefix === '?' ? prefix : suffix;
+    }),
+    hash: hash
+  });
+};
+
+var getQueryStringValueFromPath = exports.getQueryStringValueFromPath = function getQueryStringValueFromPath(path, key) {
+  var _parsePath3 = parsePath(path),
+      search = _parsePath3.search;
+
+  var match = search.match(new RegExp('[?&]' + key + '=([a-zA-Z0-9]+)'));
+  return match && match[1];
+};
+
+var extractPath = function extractPath(string) {
+  var match = string.match(/^(https?:)?\/\/[^\/]*/);
+  return match == null ? string : string.substring(match[0].length);
+};
+
+var parsePath = exports.parsePath = function parsePath(path) {
+  var pathname = extractPath(path);
+  var search = '';
+  var hash = '';
+
+  process.env.NODE_ENV !== 'production' ? (0, _warning2.default)(path === pathname, 'A path must be pathname + search + hash only, not a full URL like "%s"', path) : void 0;
+
+  var hashIndex = pathname.indexOf('#');
+  if (hashIndex !== -1) {
+    hash = pathname.substring(hashIndex);
+    pathname = pathname.substring(0, hashIndex);
+  }
+
+  var searchIndex = pathname.indexOf('?');
+  if (searchIndex !== -1) {
+    search = pathname.substring(searchIndex);
+    pathname = pathname.substring(0, searchIndex);
+  }
+
+  if (pathname === '') pathname = '/';
+
+  return {
+    pathname: pathname,
+    search: search,
+    hash: hash
+  };
+};
+
+var createPath = exports.createPath = function createPath(location) {
+  if (location == null || typeof location === 'string') return location;
+
+  var basename = location.basename,
+      pathname = location.pathname,
+      search = location.search,
+      hash = location.hash;
+
+  var path = (basename || '') + pathname;
+
+  if (search && search !== '?') path += search;
+
+  if (hash) path += hash;
+
+  return path;
+};
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 40 */
@@ -5319,7 +5319,7 @@ var _warning = __webpack_require__(17);
 
 var _warning2 = _interopRequireDefault(_warning);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 var _Actions = __webpack_require__(85);
 
@@ -7539,7 +7539,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Redirect", function() { return __WEBPACK_IMPORTED_MODULE_6__Redirect__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Route__ = __webpack_require__(406);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Route", function() { return __WEBPACK_IMPORTED_MODULE_7__Route__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__RouteUtils__ = __webpack_require__(38);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "createRoutes", function() { return __WEBPACK_IMPORTED_MODULE_8__RouteUtils__["b"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__RouterContext__ = __webpack_require__(117);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "RouterContext", function() { return __WEBPACK_IMPORTED_MODULE_9__RouterContext__["a"]; });
@@ -10549,7 +10549,7 @@ function mapAsync(array, work, callback) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_prop_types__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__getRouteParams__ = __webpack_require__(400);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ContextUtils__ = __webpack_require__(118);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__RouteUtils__ = __webpack_require__(38);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -10859,7 +10859,7 @@ exports.__esModule = true;
 
 var _AsyncUtils = __webpack_require__(411);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 var _runTransitionHook = __webpack_require__(120);
 
@@ -11056,7 +11056,7 @@ var _DOMUtils = __webpack_require__(86);
 
 var _DOMStateStorage = __webpack_require__(206);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 var _ExecutionEnvironment = __webpack_require__(122);
 
@@ -15664,7 +15664,7 @@ module.exports = CSSProperty;
 
 
 
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var ReactDOMComponentTree = __webpack_require__(15);
 var ReactInstrumentation = __webpack_require__(25);
 
@@ -16870,7 +16870,7 @@ module.exports = getActiveElement;
 var _prodInvariant = __webpack_require__(12);
 
 var DOMLazyTree = __webpack_require__(51);
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var React = __webpack_require__(48);
 var ReactBrowserEventEmitter = __webpack_require__(82);
 var ReactCurrentOwner = __webpack_require__(27);
@@ -18662,7 +18662,7 @@ var Link = __WEBPACK_IMPORTED_MODULE_1_create_react_class___default()({
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_invariant__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_invariant___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_invariant__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__RouteUtils__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PatternUtils__ = __webpack_require__(53);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__InternalPropTypes__ = __webpack_require__(66);
 
@@ -18797,7 +18797,7 @@ var _runTransitionHook2 = _interopRequireDefault(_runTransitionHook);
 
 var _LocationUtils = __webpack_require__(54);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -18920,7 +18920,7 @@ var _runTransitionHook = __webpack_require__(120);
 
 var _runTransitionHook2 = _interopRequireDefault(_runTransitionHook);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -23559,7 +23559,7 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactDom = __webpack_require__(20);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _redux = __webpack_require__(33);
 
@@ -26713,7 +26713,7 @@ module.exports = EnterLeaveEventPlugin;
 
 
 
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 
 var MUST_USE_PROPERTY = DOMProperty.injection.MUST_USE_PROPERTY;
 var HAS_BOOLEAN_VALUE = DOMProperty.injection.HAS_BOOLEAN_VALUE;
@@ -27410,7 +27410,7 @@ var AutoFocusUtils = __webpack_require__(301);
 var CSSPropertyOperations = __webpack_require__(302);
 var DOMLazyTree = __webpack_require__(51);
 var DOMNamespaces = __webpack_require__(104);
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var DOMPropertyOperations = __webpack_require__(176);
 var EventPluginHub = __webpack_require__(63);
 var EventPluginRegistry = __webpack_require__(77);
@@ -32425,7 +32425,7 @@ module.exports = getUnboundedScrollPosition;
 
 
 
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var EventPluginHub = __webpack_require__(63);
 var EventPluginUtils = __webpack_require__(98);
 var ReactComponentEnvironment = __webpack_require__(107);
@@ -34579,7 +34579,7 @@ module.exports = ReactMount.renderSubtreeIntoContainer;
 
 
 
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var EventPluginRegistry = __webpack_require__(77);
 var ReactComponentTreeHook = __webpack_require__(23);
 
@@ -34746,7 +34746,7 @@ module.exports = ReactDOMNullInputValuePropHook;
 
 
 
-var DOMProperty = __webpack_require__(35);
+var DOMProperty = __webpack_require__(36);
 var ReactComponentTreeHook = __webpack_require__(23);
 
 var warning = __webpack_require__(11);
@@ -36290,7 +36290,7 @@ function loginReducers() {
 
     case 'POST_LOGIN_REJECTED':
       return _extends({}, state, {
-        msg: 'Invalid Email or Password!',
+        msg: 'Not Authorized',
         style: 'danger',
         validation: 'error'
       });
@@ -36487,7 +36487,7 @@ exports.default = routes;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__createTransitionManager__ = __webpack_require__(197);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__InternalPropTypes__ = __webpack_require__(66);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__RouterContext__ = __webpack_require__(117);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__RouteUtils__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__RouterUtils__ = __webpack_require__(199);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__routerWarning__ = __webpack_require__(52);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -37088,7 +37088,7 @@ function getComponents(nextState, callback) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__PromiseUtils__ = __webpack_require__(198);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__PatternUtils__ = __webpack_require__(53);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__routerWarning__ = __webpack_require__(52);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__RouteUtils__ = __webpack_require__(38);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -37589,7 +37589,7 @@ var IndexRedirect = __WEBPACK_IMPORTED_MODULE_0_create_react_class___default()({
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__routerWarning__ = __webpack_require__(52);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_invariant__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_invariant___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_invariant__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__RouteUtils__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__InternalPropTypes__ = __webpack_require__(66);
 
 
@@ -37645,7 +37645,7 @@ var IndexRoute = __WEBPACK_IMPORTED_MODULE_0_create_react_class___default()({
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_invariant__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_invariant___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_invariant__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__RouteUtils__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__InternalPropTypes__ = __webpack_require__(66);
 
 
@@ -37699,7 +37699,7 @@ var Route = __WEBPACK_IMPORTED_MODULE_0_create_react_class___default()({
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_invariant___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_invariant__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__createMemoryHistory__ = __webpack_require__(202);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__createTransitionManager__ = __webpack_require__(197);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__RouteUtils__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__RouteUtils__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__RouterUtils__ = __webpack_require__(199);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -38004,7 +38004,7 @@ var _invariant2 = _interopRequireDefault(_invariant);
 
 var _LocationUtils = __webpack_require__(54);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 var _createHistory = __webpack_require__(121);
 
@@ -38383,7 +38383,7 @@ Object.defineProperty(exports, 'go', {
 
 var _LocationUtils = __webpack_require__(54);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 var getCurrentLocation = exports.getCurrentLocation = function getCurrentLocation() {
   return (0, _LocationUtils.createLocation)(window.location);
@@ -38600,7 +38600,7 @@ var _DOMUtils = __webpack_require__(86);
 
 var _DOMStateStorage = __webpack_require__(206);
 
-var _PathUtils = __webpack_require__(38);
+var _PathUtils = __webpack_require__(39);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -38804,11 +38804,11 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _reactRouterBootstrap = __webpack_require__(421);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _propTypes = __webpack_require__(2);
 
@@ -50040,6 +50040,8 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _reactBootstrap = __webpack_require__(35);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -50059,18 +50061,22 @@ var Footer = function (_React$Component) {
   }
 
   _createClass(Footer, [{
-    key: "render",
+    key: 'render',
     value: function render() {
       return _react2.default.createElement(
-        "footer",
-        { className: "footer text-center" },
+        _reactBootstrap.Col,
+        { sm: 6, smOffset: 3 },
         _react2.default.createElement(
-          "div",
-          { className: "container" },
+          'footer',
+          { className: 'footer text-center' },
           _react2.default.createElement(
-            "p",
-            { className: "footer-text" },
-            "Copyright DataCloud Brazil 2017"
+            'div',
+            { className: 'container' },
+            _react2.default.createElement(
+              'p',
+              { className: 'footer-text' },
+              'Copyright DataCloud Brazil 2017'
+            )
           )
         )
       );
@@ -50101,7 +50107,7 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRouter = __webpack_require__(84);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _reactDom = __webpack_require__(20);
 
@@ -50111,7 +50117,7 @@ var _sha2 = _interopRequireDefault(_sha);
 
 var _redux = __webpack_require__(33);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _loginActions = __webpack_require__(152);
 
@@ -50165,57 +50171,53 @@ var Login = function (_React$Component) {
     value: function render() {
       return _react2.default.createElement(
         _reactBootstrap.Col,
-        { sm: 12 },
+        { sm: 6, smOffset: 3 },
         _react2.default.createElement(
-          _reactBootstrap.Col,
-          { sm: 6, smOffset: 3 },
+          _reactBootstrap.Well,
+          null,
           _react2.default.createElement(
-            _reactBootstrap.Well,
-            null,
+            _reactBootstrap.Form,
+            { horizontal: true },
             _react2.default.createElement(
-              _reactBootstrap.Form,
-              { horizontal: true },
+              _reactBootstrap.FormGroup,
+              { controlId: 'email', validationState: this.props.validation },
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'email', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
-                  'Email'
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { sm: 8 },
-                  _react2.default.createElement(_reactBootstrap.FormControl, { ref: 'emailValue', type: 'email', placeholder: 'Email' })
-                )
+                _reactBootstrap.Col,
+                { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                'Email'
               ),
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'password', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
-                  'Password'
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { sm: 8 },
-                  _react2.default.createElement(_reactBootstrap.FormControl, { ref: 'passValue', type: 'password', placeholder: 'Password' })
-                )
+                _reactBootstrap.Col,
+                { sm: 8 },
+                _react2.default.createElement(_reactBootstrap.FormControl, { ref: 'emailValue', type: 'email', placeholder: 'Email' })
+              )
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'password', validationState: this.props.validation },
+              _react2.default.createElement(
+                _reactBootstrap.Col,
+                { componentClass: _reactBootstrap.ControlLabel, sm: 2 },
+                'Password'
               ),
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                null,
+                _reactBootstrap.Col,
+                { sm: 8 },
+                _react2.default.createElement(_reactBootstrap.FormControl, { ref: 'passValue', type: 'password', placeholder: 'Password' })
+              )
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              null,
+              _react2.default.createElement(
+                _reactBootstrap.Col,
+                { smOffset: 2, sm: 8 },
                 _react2.default.createElement(
-                  _reactBootstrap.Col,
-                  { smOffset: 2, sm: 8 },
-                  _react2.default.createElement(
-                    _reactBootstrap.Button,
-                    {
-                      onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
-                      bsStyle: !this.props.style ? 'primary' : this.props.style },
-                    !this.props.msg ? 'Sign in' : this.props.msg
-                  )
+                  _reactBootstrap.Button,
+                  {
+                    onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
+                    bsStyle: !this.props.style ? 'primary' : this.props.style },
+                  !this.props.msg ? 'Sign in' : this.props.msg
                 )
               )
             )
@@ -53283,7 +53285,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -53307,31 +53309,35 @@ var About = function (_React$Component) {
     key: 'render',
     value: function render() {
       return _react2.default.createElement(
-        _reactBootstrap.Grid,
-        null,
+        _reactBootstrap.Col,
+        { sm: 6, smOffset: 3 },
         _react2.default.createElement(
-          _reactBootstrap.Row,
-          { style: { marginTop: '15px' } },
+          _reactBootstrap.Well,
+          null,
           _react2.default.createElement(
-            'div',
+            'h2',
             null,
             _react2.default.createElement(
-              'h2',
+              'b',
               null,
               'DataCloudians (DC$)'
-            ),
-            _react2.default.createElement('br', null),
-            _react2.default.createElement(
-              'p',
-              null,
-              ' Merit Money Platform, where colleagues can reward co-workers with DC$s as a symbol of appreciation for their support, efforts, performance and good work. Each member receives ',
-              _react2.default.createElement(
-                'b',
-                null,
-                'DC$ 100'
-              ),
-              ', monthly, and will be able to transfer it to anybody in the system.'
             )
+          ),
+          _react2.default.createElement(
+            'p',
+            null,
+            'A Merit Money Platform, where colleagues can reward co-workers with DC$s as a symbol of appreciation for their support, efforts, performance and good work.'
+          ),
+          _react2.default.createElement(
+            'p',
+            null,
+            'Each member receives ',
+            _react2.default.createElement(
+              'b',
+              null,
+              'DC$ 100'
+            ),
+            ', monthly, and will be able to transfer it to anybody in the system.'
           )
         )
       );
@@ -53360,13 +53366,13 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _redux = __webpack_require__(33);
 
 var _userActions = __webpack_require__(155);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _user = __webpack_require__(587);
 
@@ -53417,7 +53423,7 @@ var TeamInfo = function (_React$Component) {
       var userList = this.props.user.map(function teamInfo(userArr) {
         return _react2.default.createElement(
           _reactBootstrap.Col,
-          { xs: 12, sm: 6, md: 4, key: userArr._id },
+          { sm: 6, smOffset: 3, key: userArr._id },
           _react2.default.createElement(_user2.default, {
             _id: userArr._id,
             name: userArr.name,
@@ -53431,7 +53437,7 @@ var TeamInfo = function (_React$Component) {
         null,
         _react2.default.createElement(
           _reactBootstrap.Row,
-          { style: { marginTop: '15px' } },
+          null,
           userList
         )
       );
@@ -53483,7 +53489,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _propTypes = __webpack_require__(2);
 
@@ -53571,11 +53577,11 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _reactDom = __webpack_require__(20);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _redux = __webpack_require__(33);
 
@@ -53641,112 +53647,108 @@ var UserAdmin = function (_React$Component) {
       });
 
       return _react2.default.createElement(
-        _reactBootstrap.Well,
-        null,
+        _reactBootstrap.Col,
+        { sm: 6, smOffset: 3 },
         _react2.default.createElement(
-          _reactBootstrap.Row,
+          _reactBootstrap.Well,
           null,
           _react2.default.createElement(
-            _reactBootstrap.Col,
-            { xs: 12, sm: 12 },
+            _reactBootstrap.Panel,
+            { style: { marginTop: '10px' } },
             _react2.default.createElement(
-              _reactBootstrap.Panel,
-              { style: { marginTop: '10px' } },
+              _reactBootstrap.FormGroup,
+              { controlId: 'name', validationState: this.props.validation },
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'name', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Name'
-                ),
-                _react2.default.createElement(_reactBootstrap.FormControl, {
-                  type: 'text',
-                  placeholder: 'Enter a Name...',
-                  ref: 'name'
-                }),
-                _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+                _reactBootstrap.ControlLabel,
+                null,
+                'Name'
+              ),
+              _react2.default.createElement(_reactBootstrap.FormControl, {
+                type: 'text',
+                placeholder: 'Enter a Name...',
+                ref: 'name'
+              }),
+              _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'balance', validationState: this.props.validation },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Balance DC$'
+              ),
+              _react2.default.createElement(_reactBootstrap.FormControl, {
+                type: 'text',
+                placeholder: 'Enter a Balance...',
+                ref: 'balance'
+              }),
+              _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'email', validationState: this.props.validation },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Email'
+              ),
+              _react2.default.createElement(_reactBootstrap.FormControl, {
+                type: 'email',
+                placeholder: 'Enter your email...',
+                ref: 'email'
+              }),
+              _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'password', validationState: this.props.validation },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Password'
+              ),
+              _react2.default.createElement(_reactBootstrap.FormControl, {
+                type: 'password',
+                placeholder: 'Enter a Password...',
+                ref: 'password'
+              }),
+              _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.Button,
+              {
+                onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
+                bsStyle: !this.props.style ? 'primary' : this.props.style },
+              !this.props.msg ? 'Create User' : this.props.msg
+            )
+          ),
+          _react2.default.createElement(
+            _reactBootstrap.Panel,
+            { style: { marginTop: '10px' } },
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'formControlsSelect' },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Select an User to delete'
               ),
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'balance', validationState: this.props.validation },
+                _reactBootstrap.FormControl,
+                { ref: 'delete', componentClass: 'select', placeholder: 'select' },
                 _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Balance DC$'
+                  'option',
+                  { value: 'select' },
+                  'select'
                 ),
-                _react2.default.createElement(_reactBootstrap.FormControl, {
-                  type: 'text',
-                  placeholder: 'Enter a Balance...',
-                  ref: 'balance'
-                }),
-                _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'email', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Email'
-                ),
-                _react2.default.createElement(_reactBootstrap.FormControl, {
-                  type: 'email',
-                  placeholder: 'Enter your email...',
-                  ref: 'email'
-                }),
-                _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'password', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Password'
-                ),
-                _react2.default.createElement(_reactBootstrap.FormControl, {
-                  type: 'password',
-                  placeholder: 'Enter a Password...',
-                  ref: 'password'
-                }),
-                _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.Button,
-                {
-                  onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
-                  bsStyle: !this.props.style ? 'primary' : this.props.style },
-                !this.props.msg ? 'Create User' : this.props.msg
+                userList
               )
             ),
             _react2.default.createElement(
-              _reactBootstrap.Panel,
-              { style: { marginTop: '10px' } },
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'formControlsSelect' },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Select an User to delete'
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.FormControl,
-                  { ref: 'delete', componentClass: 'select', placeholder: 'select' },
-                  _react2.default.createElement(
-                    'option',
-                    { value: 'select' },
-                    'select'
-                  ),
-                  userList
-                )
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.Button,
-                { onClick: this.onDelete.bind(this), bsStyle: 'danger' },
-                'Delete User'
-              )
+              _reactBootstrap.Button,
+              { onClick: this.onDelete.bind(this), bsStyle: 'danger' },
+              'Delete User'
             )
           )
         )
@@ -53827,11 +53829,11 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _reactDom = __webpack_require__(20);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _redux = __webpack_require__(33);
 
@@ -53887,92 +53889,88 @@ var Transaction = function (_React$Component) {
       });
 
       return _react2.default.createElement(
-        _reactBootstrap.Well,
-        null,
+        _reactBootstrap.Col,
+        { sm: 6, smOffset: 3 },
         _react2.default.createElement(
-          _reactBootstrap.Row,
+          _reactBootstrap.Well,
           null,
           _react2.default.createElement(
-            _reactBootstrap.Col,
-            null,
+            _reactBootstrap.Panel,
+            { style: { marginTop: '10px' } },
             _react2.default.createElement(
-              _reactBootstrap.Panel,
-              { style: { marginTop: '10px' } },
+              _reactBootstrap.FormGroup,
+              { controlId: 'formControlsSelectFrom' },
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'formControlsSelectFrom' },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Select your User'
-                ),
-                _react2.default.createElement(
-                  _reactBootstrap.FormControl,
-                  { ref: 'from', componentClass: 'select', placeholder: 'select' },
-                  _react2.default.createElement(
-                    'option',
-                    { value: 'select' },
-                    'select'
-                  ),
-                  userList
-                )
+                _reactBootstrap.ControlLabel,
+                null,
+                'Select your User'
               ),
               _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'formControlsSelectTo' },
+                _reactBootstrap.FormControl,
+                { ref: 'from', componentClass: 'select', placeholder: 'select' },
                 _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Select the user that will receive DC$'
+                  'option',
+                  { value: 'select' },
+                  'select'
                 ),
-                _react2.default.createElement(
-                  _reactBootstrap.FormControl,
-                  { ref: 'to', componentClass: 'select', placeholder: 'select' },
-                  _react2.default.createElement(
-                    'option',
-                    { value: 'select' },
-                    'select'
-                  ),
-                  userList
-                )
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'description', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Description'
-                ),
-                _react2.default.createElement(_reactBootstrap.FormControl, {
-                  type: 'text',
-                  placeholder: 'Enter a Description...',
-                  ref: 'description'
-                }),
-                _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.FormGroup,
-                { controlId: 'amount', validationState: this.props.validation },
-                _react2.default.createElement(
-                  _reactBootstrap.ControlLabel,
-                  null,
-                  'Amount DC$'
-                ),
-                _react2.default.createElement(_reactBootstrap.FormControl, {
-                  type: 'text',
-                  placeholder: 'Enter an Amount...',
-                  ref: 'amount'
-                }),
-                _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
-              ),
-              _react2.default.createElement(
-                _reactBootstrap.Button,
-                {
-                  onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
-                  bsStyle: !this.props.style ? 'primary' : this.props.style },
-                !this.props.msg ? 'Confirm' : this.props.msg
+                userList
               )
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'formControlsSelectTo' },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Select the user that will receive DC$'
+              ),
+              _react2.default.createElement(
+                _reactBootstrap.FormControl,
+                { ref: 'to', componentClass: 'select', placeholder: 'select' },
+                _react2.default.createElement(
+                  'option',
+                  { value: 'select' },
+                  'select'
+                ),
+                userList
+              )
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'description', validationState: this.props.validation },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Description'
+              ),
+              _react2.default.createElement(_reactBootstrap.FormControl, {
+                type: 'text',
+                placeholder: 'Enter a Description...',
+                ref: 'description'
+              }),
+              _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.FormGroup,
+              { controlId: 'amount', validationState: this.props.validation },
+              _react2.default.createElement(
+                _reactBootstrap.ControlLabel,
+                null,
+                'Amount DC$'
+              ),
+              _react2.default.createElement(_reactBootstrap.FormControl, {
+                type: 'text',
+                placeholder: 'Enter an Amount...',
+                ref: 'amount'
+              }),
+              _react2.default.createElement(_reactBootstrap.FormControl.Feedback, null)
+            ),
+            _react2.default.createElement(
+              _reactBootstrap.Button,
+              {
+                onClick: !this.props.msg ? this.handleSubmit.bind(this) : this.resetForm.bind(this),
+                bsStyle: !this.props.style ? 'primary' : this.props.style },
+              !this.props.msg ? 'Confirm' : this.props.msg
             )
           )
         )
@@ -54105,7 +54103,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _redux = __webpack_require__(33);
 
@@ -54205,13 +54203,13 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRedux = __webpack_require__(36);
+var _reactRedux = __webpack_require__(37);
 
 var _redux = __webpack_require__(33);
 
 var _reactRouter = __webpack_require__(84);
 
-var _reactBootstrap = __webpack_require__(39);
+var _reactBootstrap = __webpack_require__(35);
 
 var _propTypes = __webpack_require__(2);
 
